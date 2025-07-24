@@ -12,7 +12,11 @@ import { authRoutes } from "../routes/auth.routes.js";
 import { AdminService } from "../services/admin/AdminService.js";
 import { AdminController } from "../controllers/AdminController.js";
 import { adminRoutes } from "../routes/admin.routes.js";
+import { clientRoutes } from "../routes/client.routes.js";
 import { AdminLayout } from "../layout/AdminLayout.js";
+import { ClientController } from "../controllers/ClientController.js";
+import { ArticleService } from "../services/client/ArticleService.js";
+import { ClientLayout } from "../layout/ClientLayout.js";
 
 export class App {
   constructor(config) {
@@ -36,12 +40,17 @@ export class App {
       api: this.services.api,
       storage: this.services.storage,
     });
+    this.services.clients = new ArticleService({
+      api: this.services.api,
+      storage: this.services.storage,
+    });
 
     //les controllers de l'applications
 
     this.controllers = {
       Auth: new AuthController(this),
-      admin: new AdminController(this)
+      admin: new AdminController(this),
+      client: new ClientController(this)
     };
 
     this.router = new Router(this, {
@@ -50,8 +59,10 @@ export class App {
 
     this.router.addLayout("auth", AuthLayout);
     this.router.addLayout("admin", AdminLayout)
+    this.router.addLayout("client", ClientLayout)
     this.router.addRoutes(authRoutes);
     this.router.addRoutes(adminRoutes)
+    this.router.addRoutes(clientRoutes)
 
     this.initModules();
     hydrateStoreFromLocalStorage(this.store, this.services.storage);

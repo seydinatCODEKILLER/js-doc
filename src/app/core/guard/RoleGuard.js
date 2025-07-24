@@ -17,3 +17,7 @@ export const AdminGuard = {
 export const BoutiquierGuard = {
   execute: RoleGuard.requiredRole("boutiquier"),
 };
+
+export const ClientGuard = {
+  execute: RoleGuard.requiredRole("client"),
+};

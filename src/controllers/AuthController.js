@@ -33,7 +33,7 @@ export class AuthController {
     const routes = {
       admin: "/admin/dashboard",
       boutiquier: "/boutiquier/products",
-      client: "/boutique",
+      client: "/client/boutique",
     };
 
     this.app.router.navigateTo(routes[role]);
