@@ -19,6 +19,8 @@ import { boutiquierRoutes } from "../routes/boutiquier_product.routes.js";
 import { BoutiquierLayout } from "../layout/BoutiquierLayout.js";
 import { ArticleService } from "../services/boutiquier/article/ArticleService.js";
 import { ArticleController } from "../controllers/boutiquier/ArticleController.js";
+import { BoutiquierClientService } from "../services/boutiquier/BoutiquierClientService.js";
+import { BoutiquierClientController } from "../controllers/boutiquier/BoutiquierClientController.js";
 
 export class App {
   constructor(config) {
@@ -53,13 +55,19 @@ export class App {
       storage: this.services.storage,
     });
 
+    this.services.boutiquier_client_services = new BoutiquierClientService({
+      api: this.services.api,
+      storage: this.services.storage,
+    });
+
     //les controllers de l'applications
 
     this.controllers = {
       Auth: new AuthController(this),
       admin: new AdminController(this),
       product: new ProductController(this),
-      article: new ArticleController(this)
+      article: new ArticleController(this),
+      boutiquier_client: new BoutiquierClientController(this)
     };
 
     this.router = new Router(this, {
