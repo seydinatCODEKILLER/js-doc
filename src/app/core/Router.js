@@ -8,11 +8,11 @@ class Router {
     this.currentView = null;
     this.currentLayout = null;
     this.history = window.history;
-    this.cache = new Map(); 
+    this.cache = new Map();
 
     this.config = {
       root: "/",
-      mode: "hash",
+      mode: "history",
       scrollRestoration: "manual",
       defaultLayout: "default",
       cacheSize: 10, // Nombre max de vues en cache
@@ -67,7 +67,7 @@ class Router {
 
       // Normalisation du chemin
       const normalizedPath = this.normalizeRoutePath(route.path);
-      
+
       // Compilation de la route
       const compiledRoute = {
         ...route,
@@ -100,7 +100,7 @@ class Router {
       // Les routes statiques d'abord
       if (!a.path.includes(":") && b.path.includes(":")) return -1;
       if (a.path.includes(":") && !b.path.includes(":")) return 1;
-      
+
       // Sinon par longueur de chemin (les plus longues d'abord)
       return b.path.split("/").length - a.path.split("/").length;
     });
@@ -113,15 +113,15 @@ class Router {
    */
   normalizeRoutePath(path) {
     // Supprime les doubles slashes
-    path = path.replace(/\/+/g, '/');
-    
+    path = path.replace(/\/+/g, "/");
+
     // Gestion du slash final selon la config strict
     if (this.config.strict) {
-      if (!path.endsWith('/') && path !== '/') path += '/';
+      if (!path.endsWith("/") && path !== "/") path += "/";
     } else {
-      if (path.endsWith('/') && path !== '/') path = path.slice(0, -1);
+      if (path.endsWith("/") && path !== "/") path = path.slice(0, -1);
     }
-    
+
     return path;
   }
 
@@ -130,28 +130,26 @@ class Router {
    */
   pathToRegex(path) {
     const segments = path
-      .split('/')
+      .split("/")
       .filter(Boolean)
       .map((segment) => {
-        if (segment.startsWith(':')) {
+        if (segment.startsWith(":")) {
           const paramName = segment.slice(1);
           // Gestion des paramètres optionnels (suffixe ?)
-          if (paramName.endsWith('?')) {
+          if (paramName.endsWith("?")) {
             return `(?:/([^/]+))?`;
           }
-          return '([^/]+)';
+          return "([^/]+)";
         }
         return this.config.sensitive ? segment : segment.toLowerCase();
       });
 
-    const regexStr = segments.length === 0 
-      ? '^/$' 
-      : `^/${segments.join('/')}${this.config.strict ? '' : '/?'}$`;
-      
-    return new RegExp(
-      regexStr,
-      this.config.sensitive ? '' : 'i'
-    );
+    const regexStr =
+      segments.length === 0
+        ? "^/$"
+        : `^/${segments.join("/")}${this.config.strict ? "" : "/?"}$`;
+
+    return new RegExp(regexStr, this.config.sensitive ? "" : "i");
   }
 
   /**
@@ -159,11 +157,11 @@ class Router {
    */
   extractParams(path) {
     return path
-      .split('/')
-      .filter((segment) => segment.startsWith(':'))
+      .split("/")
+      .filter((segment) => segment.startsWith(":"))
       .map((segment) => {
         const param = segment.slice(1);
-        return param.endsWith('?') ? param.slice(0, -1) : param;
+        return param.endsWith("?") ? param.slice(0, -1) : param;
       });
   }
 
@@ -173,6 +171,8 @@ class Router {
   async handleNavigation() {
     const path = this.getCurrentPath();
     const matched = this.matchRoute(path);
+
+    console.log(path);
 
     if (!matched) return this.handleNotFound();
 
@@ -199,7 +199,7 @@ class Router {
       if (!view) {
         // Création de la vue
         view = new route.component(this.app, { params, route });
-        
+
         // Mise en cache
         if (this.config.cacheSize > 0) {
           this.cache.set(cacheKey, view);
@@ -254,8 +254,8 @@ class Router {
    */
   getCacheKey(route, params) {
     const paramStr = route.params
-      .map(param => `${param}=${params[param] || ''}`)
-      .join('&');
+      .map((param) => `${param}=${params[param] || ""}`)
+      .join("&");
     return `${route.path}?${paramStr}`;
   }
 
@@ -284,12 +284,14 @@ class Router {
   matchRoute(path) {
     // Normalisation du chemin demandé
     const normalizedPath = this.normalizePath(path);
-    
+
     for (const route of this.routes) {
       // Test insensible à la casse si configuré
-      const testPath = this.config.sensitive ? normalizedPath : normalizedPath.toLowerCase();
+      const testPath = this.config.sensitive
+        ? normalizedPath
+        : normalizedPath.toLowerCase();
       const match = testPath.match(route.regex);
-      
+
       if (match) {
         const params = this.extractRouteParams(route, match);
         return { route, params };
@@ -323,7 +325,7 @@ class Router {
 
   async runMiddlewares(route, hook, view) {
     if (!route.middlewares) return;
-    
+
     for (const middleware of route.middlewares) {
       if (typeof middleware[hook] === "function") {
         try {
@@ -395,28 +397,30 @@ class Router {
   }
 
   normalizePath(path) {
+    // Si le chemin est déjà normalisé (évite la récursion)
+    if (path === "/") return path;
+
     // Supprime le hash si en mode history
     if (this.config.mode === "history" && path.startsWith("#")) {
       path = path.slice(1);
     }
-    
-    // Gestion des chemins relatifs
-    if (!path.startsWith("/") && !path.startsWith("#")) {
-      const current = this.getCurrentPath().split("/");
-      current.pop();
-      path = current.join("/") + "/" + path;
+
+    // Gestion des chemins relatifs - NE PAS utiliser getCurrentPath()
+    if (!path.startsWith("/")) {
+      // Pour les chemins relatifs, on suppose qu'ils sont relatifs à la racine
+      path = "/" + path;
     }
-    
+
     // Suppression des doubles slashes
     path = path.replace(/\/+/g, "/");
-    
+
     // Gestion du slash final selon la config
     if (this.config.strict) {
       if (!path.endsWith("/") && path !== "/") path += "/";
     } else {
       if (path.endsWith("/") && path !== "/") path = path.slice(0, -1);
     }
-    
+
     return path;
   }
 
@@ -434,13 +438,13 @@ class Router {
 
   getCurrentPath() {
     let path;
-    
+
     if (this.config.mode === "hash") {
       path = window.location.hash.slice(1) || "/";
     } else {
       path = window.location.pathname.replace(this.config.root, "") || "/";
     }
-    
+
     return this.normalizePath(path);
   }
 

@@ -9,6 +9,10 @@ import ApiService from "../config/ApiService.js";
 import { AuthService } from "../services/auth/AuthService.js";
 import { AuthController } from "../controllers/AuthController.js";
 import { authRoutes } from "../routes/auth.routes.js";
+import { AdminService } from "../services/admin/AdminService.js";
+import { AdminController } from "../controllers/AdminController.js";
+import { adminRoutes } from "../routes/admin.routes.js";
+import { AdminLayout } from "../layout/AdminLayout.js";
 
 export class App {
   constructor(config) {
@@ -26,8 +30,18 @@ export class App {
       storage: this.services.storage,
     });
 
+    //les services de l'applications
+
+    this.services.admins = new AdminService({
+      api: this.services.api,
+      storage: this.services.storage,
+    });
+
+    //les controllers de l'applications
+
     this.controllers = {
       Auth: new AuthController(this),
+      admin: new AdminController(this)
     };
 
     this.router = new Router(this, {
@@ -36,7 +50,9 @@ export class App {
     });
 
     this.router.addLayout("auth", AuthLayout);
+    this.router.addLayout("admin", AdminLayout)
     this.router.addRoutes(authRoutes);
+    this.router.addRoutes(adminRoutes)
 
     this.initModules();
     hydrateStoreFromLocalStorage(this.store, this.services.storage);

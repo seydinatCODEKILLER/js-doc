@@ -32,7 +32,7 @@ export default class Sidebar {
 
   #createSidebarMarkup() {
     return `
-      <div id="sidebar" class="flex flex-col justify-between p-3 fixed left-0 shadow-md h-full bg-white text-gray-900 w-64 lg:w-52 md:flex transform transition-transform duration-300 ease-in-out translate-x-0 z-50">
+      <div id="sidebar" class="flex flex-col justify-between p-3 fixed left-0 shadow-md h-full bg-white text-gray-900 w-64 lg:w-52 transform transition-transform duration-300 ease-in-out translate-x-0 z-50">
         <div class="flex flex-col gap-6">
           ${this.#createHeaderMarkup()}
           ${this.#createNavigationMarkup()}
@@ -138,7 +138,8 @@ export default class Sidebar {
   }
 
   toggle() {
-    this.element.classList.toggle("-translate-x-full");
+this.element.classList.toggle("-translate-x-full");
+this.element.classList.toggle("translate-x-0");
   }
 
   setActiveLink(path) {
