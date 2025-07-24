@@ -32,6 +32,10 @@ export class AbstractView {
     return this.container;
   }
 
+  async refresh() {
+    await this.render(); // Implémentation par défaut
+  }
+
   /**
    * Méthode à implémenter par les classes enfants
    */

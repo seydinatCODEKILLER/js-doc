@@ -1,3 +1,4 @@
+
 class Router {
   constructor(app, config = {}) {
     this.app = app;
@@ -28,12 +29,14 @@ class Router {
     if ("scrollRestoration" in this.history) {
       this.history.scrollRestoration = this.config.scrollRestoration;
     }
-    window.addEventListener("popstate", this.handleNavigation.bind(this));
-    window.addEventListener("hashchange", this.handleNavigation.bind(this));
-    document.addEventListener(
-      "DOMContentLoaded",
-      this.handleNavigation.bind(this)
-    );
+    // Utilisez des fonctions liées correctement
+    this.boundHandleNavigation = this.handleNavigation.bind(this);
+    window.addEventListener("popstate", this.boundHandleNavigation);
+    // Pour le mode hash seulement:
+    if (this.config.mode === "hash") {
+      window.addEventListener("hashchange", this.boundHandleNavigation);
+    }
+    document.addEventListener("DOMContentLoaded", this.boundHandleNavigation);
     document.addEventListener("click", this.handleLinkClick.bind(this));
   }
 
@@ -171,8 +174,6 @@ class Router {
   async handleNavigation() {
     const path = this.getCurrentPath();
     const matched = this.matchRoute(path);
-
-    console.log(path);
 
     if (!matched) return this.handleNotFound();
 
@@ -387,12 +388,15 @@ class Router {
 
     if (this.config.mode === "history") {
       this.history[options.replace ? "replaceState" : "pushState"](
-        { key: Date.now() }, // Ajout d'une clé unique pour différencier les états
+        { key: Date.now() },
         "",
         normalizedPath
       );
+      // Force le déclenchement de la navigation
+      this.handleNavigation();
     } else {
       window.location.hash = normalizedPath;
+      // Pour le mode hash, hashchange est déjà écouté
     }
   }
 

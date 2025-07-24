@@ -1,5 +1,5 @@
 import { Modal } from "../components/modal/Modal.js";
-// import { BoutiquierEditModal } from "./AdminBoutiquierEditModal.js";
+import { BoutiquierEditModal } from "../views/admin/AdminBoutiquierEditModal.js";
 
 export class AdminController {
   constructor(app) {
@@ -108,6 +108,7 @@ export class AdminController {
       const result = await this.service.updateBoutiquier(id, data);
 
       this.cache.boutiquiers = null;
+      this.app.router.cache.delete("/admin/boutiquiers");
       this.app.services.notifications.show(
         "Boutiquier mis à jour avec succès",
         "success"
@@ -124,14 +125,17 @@ export class AdminController {
     }
   }
 
+  clearCache() {
+    this.cache.boutiquiers = null;
+  }
+
   async #deleteBoutiquier(id) {
     try {
-      console.log(id);
-
       const confirmed = await this.showDeleteConfirmation();
       if (!confirmed) return;
 
       await this.service.softDeleteBoutiquier(id);
+      this.clearCache();
       this.cache.boutiquiers = null;
 
       this.app.services.notifications.show(
@@ -156,6 +160,7 @@ export class AdminController {
 
       await this.service.restoreBoutiquier(id);
       this.cache.boutiquiers = null;
+      this.clearCache();
 
       this.app.services.notifications.show(
         "Boutiquier restauré avec succès",

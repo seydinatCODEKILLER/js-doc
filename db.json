@@ -1,0 +1,115 @@
+{
+  "utilisateurs": [
+    {
+      "id": "1",
+      "nom": "Thiam2",
+      "prenom": "Ousmane",
+      "email": "ousmane020@gmail.com",
+      "password": "liverpool",
+      "avatar": "https://pikaso.cdnpk.net/public/production/prompt-templates/211.png?preview=1",
+      "role": "boutiquier",
+      "telephone": null,
+      "deleted": false
+    },
+    {
+      "id": "2",
+      "nom": "Thiam",
+      "prenom": "Fallou",
+      "email": "fallou020@gmail.com",
+      "password": "liverpool",
+      "avatar": "https://pikaso.cdnpk.net/public/production/prompt-templates/211.png?preview=1",
+      "role": "admin",
+      "telephone": "775803950",
+      "deleted": false
+    },
+    {
+      "id": "3",
+      "nom": "Thiam2",
+      "prenom": "Anthia",
+      "email": "anthia020@gmail.com",
+      "password": "liverpool",
+      "avatar": "https://pikaso.cdnpk.net/public/production/prompt-templates/211.png?preview=1",
+      "role": "client",
+      "telephone": "+221772873454",
+      "deleted": false
+    }
+  ],
+  "client": [
+    {
+      "id": "1",
+      "id_utilisateur": "3",
+      "has_account": true
+    }
+  ],
+  "admin": [
+    {
+      "id": "1",
+      "id_utilisateur": "2"
+    }
+  ],
+  "boutiquier": [
+    {
+      "id": "1",
+      "id_utilisateur": "1"
+    }
+  ],
+  "produits": [
+    {
+      "id": "1",
+      "nom": "Lait en poudre Nido2",
+      "prix": 3500,
+      "quantite": 50,
+      "seuil_alerte": 10,
+      "image": "https://pikaso.cdnpk.net/public/production/prompt-templates/211.png?preview=1",
+      "id_boutiquier": "1",
+      "article_id": "1",
+      "date_creation": "2023-11-20",
+      "deleted": false
+    }
+  ],
+  "articles": [
+    {
+      "id": "1",
+      "titre": "Alimentation",
+      "contenu": "Réduction de 20% sur les produits laitiers",
+      "id_boutiquier": "1",
+      "date_publication": "2023-11-20",
+      "deleted": false
+    },
+    {
+      "id": "2",
+      "titre": "Cosmetiques",
+      "contenu": "Reduction du meilleur cosmetique",
+      "id_boutiquier": "1",
+      "date_publication": "2025-07-18",
+      "deleted": false
+    },
+    {
+      "id": "3",
+      "titre": "categorie 1",
+      "contenu": "hhgguyikliuloulouiuljh",
+      "id_boutiquier": "1",
+      "date_publication": "2025-07-22",
+      "deleted": false
+    }
+  ],
+  "dettes": [
+    {
+      "id": "1",
+      "id_client": "1",
+      "id_boutiquier": "1",
+      "montant": 15000,
+      "statut": "accepted",
+      "date_demande": "2023-11-20",
+      "date_traitement": "2025-07-22"
+    }
+  ],
+  "boutiquier_client": [
+    {
+      "id": "1",
+      "id_boutiquier": "1",
+      "id_client": "1",
+      "date_association": "2023-11-20"
+    }
+  ]
+}
