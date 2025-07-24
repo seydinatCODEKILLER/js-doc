@@ -1,7 +1,7 @@
 import { FloatingActionButton } from "../../components/button/FloatingButton.js";
 import { BoutiquierCard } from "../../components/card/BoutiquierCard.js";
 import { ModernTable } from "../../components/table/Table.js";
-import { AbstractView } from "../../views/AbstractView.js";
+import { AbstractView } from "../AbstractView.js";
 import { BoutiquierFormModal } from "./AdminBoutiquierFormModal.js";
 
 export class AdminBoutiquierView extends AbstractView {
@@ -11,6 +11,7 @@ export class AdminBoutiquierView extends AbstractView {
     this.currentView = "cards";
     this.localBoutiquiers = [];
     this.formModal = new BoutiquierFormModal(app);
+    this.unsubscribe = [];
   }
 
   async setup() {
@@ -153,7 +154,7 @@ export class AdminBoutiquierView extends AbstractView {
           header: "Avatar",
           key: "avatar",
           render: (item) => {
-            return `<image src="${item.avatar}" class="w-12 h-12 rounded object-cover rounded-full" />`;
+            return `<image src="${item.avatar}" class="w-12 h-12 object-cover rounded-full" />`;
           },
         },
         { header: "Nom", key: "nom", sortable: true },
@@ -195,6 +196,8 @@ export class AdminBoutiquierView extends AbstractView {
     table.update(this.localBoutiquiers, 1);
   }
 
+
+  // Ajoutez cette méthode pour nettoyer
   cleanup() {
     if (this.fab) this.fab.destroy();
     if (this.formModal) this.formModal.close();
@@ -210,5 +213,10 @@ export class AdminBoutiquierView extends AbstractView {
 
   getStatusButtonClass(item) {
     return item.deleted ? "btn-success" : "btn-error";
+  }
+
+  async refreshView() {
+    this.localBoutiquiers = await this.controller.loadBoutiquiers(true);
+    this.renderContent();
   }
 }

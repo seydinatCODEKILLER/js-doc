@@ -46,7 +46,6 @@ export class App {
 
     this.router = new Router(this, {
       mode: "history",
-      scrollRestoration: "manual",
     });
 
     this.router.addLayout("auth", AuthLayout);
