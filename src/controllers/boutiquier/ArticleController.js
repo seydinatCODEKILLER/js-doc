@@ -1,5 +1,5 @@
-// import { Modal } from "../../../components/modal/Modal.js";
-// import { ArticleEditModal } from "./ArticleEditModal.js";
+import { Modal } from "../../components/modal/Modal.js";
+import { ArticleEditModal } from "../../views/boutiquier/article/articleEditModal.js";
 
 export class ArticleController {
   constructor(app) {
@@ -44,26 +44,26 @@ export class ArticleController {
     }
   }
 
-//   async createArticle(articleData) {
-//     try {
-//       const result = await this.service.createArticle(articleData);
+  async createArticle(articleData) {
+    try {
+      const result = await this.service.createArticle(articleData);
 
-//       this.cache.products = null;
-//       this.app.services.notifications.show(
-//         "article créé avec succès",
-//         "success"
-//       );
+      this.cache.products = null;
+      this.app.services.notifications.show(
+        "article créé avec succès",
+        "success"
+      );
 
-//       this.app.eventBus.publish("article:updated");
-//       return result;
-//     } catch (error) {
-//       this.app.services.notifications.show(
-//         error.message || "Erreur lors de la création",
-//         "error"
-//       );
-//       throw error;
-//     }
-//   }
+      this.app.eventBus.publish("article:updated");
+      return result;
+    } catch (error) {
+      this.app.services.notifications.show(
+        error.message || "Erreur lors de la création",
+        "error"
+      );
+      throw error;
+    }
+  }
 
   isCacheValid() {
     return (
@@ -72,131 +72,131 @@ export class ArticleController {
     );
   }
 
-//   async handleArticleAction(action, id, actionType) {
-//     switch (action) {
-//       case "edit":
-//         return this.#editArticle(id);
-//       case "toggleStatus":
-//         return actionType === "delete"
-//           ? this.#deleteArticle(id)
-//           : this.#restoreArticle(id);
-//       default:
-//         throw new Error(`Action ${action} non supportée`);
-//     }
-//   }
+  async handleArticleAction(action, id, actionType) {
+    switch (action) {
+      case "edit":
+        return this.#editArticle(id);
+      case "toggleStatus":
+        return actionType === "delete"
+          ? this.#deleteArticle(id)
+          : this.#restoreArticle(id);
+      default:
+        throw new Error(`Action ${action} non supportée`);
+    }
+  }
 
-//   async #editArticle(id) {
-//     try {
-//       const product = this.cache.articles?.find((b) => b.id == id);
+  async #editArticle(id) {
+    try {
+      const product = this.cache.articles?.find((b) => b.id == id);
 
-//       if (!product) {
-//         throw new Error("article non trouvé");
-//       }
+      if (!product) {
+        throw new Error("article non trouvé");
+      }
 
-//       const editModal = new ArticleEditModal(this.app, product);
-//       editModal.open();
-//     } catch (error) {
-//       console.log(error);
+      const editModal = new ArticleEditModal(this.app, product);
+      editModal.open();
+    } catch (error) {
+      console.log(error);
 
-//       this.app.services.notifications.show(
-//         error.message || "Erreur lors de l'édition",
-//         "error"
-//       );
-//     }
-//   }
+      this.app.services.notifications.show(
+        error.message || "Erreur lors de l'édition",
+        "error"
+      );
+    }
+  }
 
-//   async updateArticle(id, data) {
-//     try {
-//       const result = await this.service.updateArticle(id, data);
+  async updateArticle(id, data) {
+    try {
+      const result = await this.service.updateArticle(id, data);
 
-//       this.cache.articles = null;
-//       this.app.services.notifications.show(
-//         "article mis à jour avec succès",
-//         "success"
-//       );
+      this.cache.articles = null;
+      this.app.services.notifications.show(
+        "article mis à jour avec succès",
+        "success"
+      );
 
-//       this.app.eventBus.publish("article:updated");
-//       return result;
-//     } catch (error) {
-//       this.app.services.notifications.show(
-//         error.message || "Erreur lors de la mise à jour",
-//         "error"
-//       );
-//       throw error;
-//     }
-//   }
+      this.app.eventBus.publish("article:updated");
+      return result;
+    } catch (error) {
+      this.app.services.notifications.show(
+        error.message || "Erreur lors de la mise à jour",
+        "error"
+      );
+      throw error;
+    }
+  }
 
-//   async #deleteArticle(id) {
-//     const confirmed = await this.showDeleteConfirmation();
-//     if (!confirmed) return;
+  async #deleteArticle(id) {
+    const confirmed = await this.showDeleteConfirmation();
+    if (!confirmed) return;
 
-//     await this.service.softDeleteArticle(id);
-//     this.cache.articles = null;
+    await this.service.softDeleteArticle(id);
+    this.cache.articles = null;
 
-//     this.app.services.notifications.show(
-//       "produits désactivé avec succès",
-//       "success"
-//     );
+    this.app.services.notifications.show(
+      "produits désactivé avec succès",
+      "success"
+    );
 
-//     this.app.eventBus.publish("articles:updated");
-//   }
-//   catch(error) {
-//     this.app.services.notifications.show(
-//       error.message || "Erreur lors de la désactivation",
-//       "error"
-//     );
-//     throw error;
-//   }
+    this.app.eventBus.publish("articles:updated");
+  }
+  catch(error) {
+    this.app.services.notifications.show(
+      error.message || "Erreur lors de la désactivation",
+      "error"
+    );
+    throw error;
+  }
 
-//   async showDeleteConfirmation() {
-//     return new Promise((resolve) => {
-//       Modal.confirm({
-//         title: "Confirmer la désactivation",
-//         content: "Êtes-vous sûr de vouloir désactiver ce article ?",
-//         confirmText: "Désactiver",
-//         cancelText: "Annuler",
-//         onConfirm: () => resolve(true),
-//         onCancel: () => resolve(false),
-//       });
-//     });
-//   }
+  async showDeleteConfirmation() {
+    return new Promise((resolve) => {
+      Modal.confirm({
+        title: "Confirmer la désactivation",
+        content: "Êtes-vous sûr de vouloir désactiver ce article ?",
+        confirmText: "Désactiver",
+        cancelText: "Annuler",
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+  }
 
-//   async #restoreArticle(id) {
-//     try {
-//       const confirmed = await this.showRestoreConfirmation();
-//       if (!confirmed) return;
+  async #restoreArticle(id) {
+    try {
+      const confirmed = await this.showRestoreConfirmation();
+      if (!confirmed) return;
 
-//       await this.service.restoreArticle(id);
-//       this.cache.products = null;
+      await this.service.restoreArticle(id);
+      this.cache.products = null;
 
-//       this.app.services.notifications.show(
-//         "article restauré avec succès",
-//         "success"
-//       );
-//       this.app.eventBus.publish("articles:updated");
-//     } catch (error) {
-//       this.handleActionError(error, "restauration");
-//     }
-//   }
+      this.app.services.notifications.show(
+        "article restauré avec succès",
+        "success"
+      );
+      this.app.eventBus.publish("articles:updated");
+    } catch (error) {
+      this.handleActionError(error, "restauration");
+    }
+  }
 
-//   async showRestoreConfirmation() {
-//     return new Promise((resolve) => {
-//       Modal.confirm({
-//         title: "Confirmer la restauration",
-//         content: "Êtes-vous sûr de vouloir restaurer ce article ?",
-//         confirmText: "Restaurer",
-//         cancelText: "Annuler",
-//         onConfirm: () => resolve(true),
-//         onCancel: () => resolve(false),
-//       });
-//     });
-//   }
+  async showRestoreConfirmation() {
+    return new Promise((resolve) => {
+      Modal.confirm({
+        title: "Confirmer la restauration",
+        content: "Êtes-vous sûr de vouloir restaurer ce article ?",
+        confirmText: "Restaurer",
+        cancelText: "Annuler",
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+  }
 
-//   handleActionError(error, actionName) {
-//     this.app.services.notifications.show(
-//       error.message || `Erreur lors de la ${actionName}`,
-//       "error"
-//     );
-//     throw error;
-//   }
+  handleActionError(error, actionName) {
+    this.app.services.notifications.show(
+      error.message || `Erreur lors de la ${actionName}`,
+      "error"
+    );
+    throw error;
+  }
 }
