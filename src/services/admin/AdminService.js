@@ -16,8 +16,8 @@ export class AdminService extends AbstractService {
 
   async createBoutiquier(data) {
     try {
-      const idUtilisateur = await this.generateId("/utilisateurs");
-      const idBoutiquier = await this.generateId("/boutiquier");
+      const idUtilisateur = String(await this.generateId("/utilisateurs"));
+      const idBoutiquier = String(await this.generateId("/boutiquier"));
 
       const boutiquier = new Boutiquier({ ...data, id: idUtilisateur });
       const userData = boutiquier.toJSON();
