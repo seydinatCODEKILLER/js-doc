@@ -13,6 +13,12 @@ import { AdminService } from "../services/admin/AdminService.js";
 import { AdminController } from "../controllers/AdminController.js";
 import { adminRoutes } from "../routes/admin.routes.js";
 import { AdminLayout } from "../layout/AdminLayout.js";
+import { ProductService } from "../services/boutiquier/produit/ProduitService.js";
+import { ProductController } from "../controllers/boutiquier/ProductController.js";
+import { boutiquierRoutes } from "../routes/boutiquier_product.routes.js";
+import { BoutiquierLayout } from "../layout/BoutiquierLayout.js";
+import { ArticleService } from "../services/boutiquier/article/ArticleService.js";
+import { ArticleController } from "../controllers/boutiquier/ArticleController.js";
 
 export class App {
   constructor(config) {
@@ -37,11 +43,23 @@ export class App {
       storage: this.services.storage,
     });
 
+    this.services.products = new ProductService({
+      api: this.services.api,
+      storage: this.services.storage,
+    });
+
+    this.services.articles = new ArticleService({
+      api: this.services.api,
+      storage: this.services.storage,
+    });
+
     //les controllers de l'applications
 
     this.controllers = {
       Auth: new AuthController(this),
-      admin: new AdminController(this)
+      admin: new AdminController(this),
+      product: new ProductController(this),
+      article: new ArticleController(this)
     };
 
     this.router = new Router(this, {
@@ -50,8 +68,10 @@ export class App {
 
     this.router.addLayout("auth", AuthLayout);
     this.router.addLayout("admin", AdminLayout)
+    this.router.addLayout("boutiquier", BoutiquierLayout)
     this.router.addRoutes(authRoutes);
     this.router.addRoutes(adminRoutes)
+    this.router.addRoutes(boutiquierRoutes)
 
     this.initModules();
     hydrateStoreFromLocalStorage(this.store, this.services.storage);
