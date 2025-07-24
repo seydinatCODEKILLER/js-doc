@@ -1,11 +1,19 @@
 import './style.css'
+import { App } from "./app/App.js";
 
+const config = {
+  apiBaseUrl: "http://localhost:3000",
+  initialState: {
+    user: null,
+    isAuthenticated: false,
+    role: null,
+  },
+};
 
-document.querySelector('#app').innerHTML = `
-  <div class="text-red-500 text-3xl font-meidum">
-   Bonjour tout le monde
-   <button class="btn btn-primary">Clicker moi</button>
-  </div>
-`
+document.addEventListener("DOMContentLoaded", () => {
+  const app = new App(config);
+  window.app = app;
 
-setupCounter(document.querySelector('#counter'))
+  console.log("Application initialisée", window.app);
+});
+
