@@ -21,6 +21,8 @@ import { ArticleService } from "../services/boutiquier/article/ArticleService.js
 import { ArticleController } from "../controllers/boutiquier/ArticleController.js";
 import { BoutiquierClientService } from "../services/boutiquier/BoutiquierClientService.js";
 import { BoutiquierClientController } from "../controllers/boutiquier/BoutiquierClientController.js";
+import { BoutiquierDetteService } from "../services/boutiquier/BoutiquierDetteService.js";
+import { BoutiquierDetteController } from "../controllers/boutiquier/BoutiquierDetteController.js";
 
 export class App {
   constructor(config) {
@@ -60,6 +62,12 @@ export class App {
       storage: this.services.storage,
     });
 
+    this.services.boutiquier_dette_services = new BoutiquierDetteService({
+      api: this.services.api,
+      storage: this.services.storage,
+    });
+
+
     //les controllers de l'applications
 
     this.controllers = {
@@ -67,7 +75,8 @@ export class App {
       admin: new AdminController(this),
       product: new ProductController(this),
       article: new ArticleController(this),
-      boutiquier_client: new BoutiquierClientController(this)
+      boutiquier_client: new BoutiquierClientController(this),
+      boutiquier_dette: new BoutiquierDetteController(this)
     };
 
     this.router = new Router(this, {
