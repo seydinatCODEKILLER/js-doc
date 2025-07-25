@@ -23,6 +23,8 @@ import { BoutiquierClientService } from "../services/boutiquier/BoutiquierClient
 import { BoutiquierClientController } from "../controllers/boutiquier/BoutiquierClientController.js";
 import { BoutiquierDetteService } from "../services/boutiquier/BoutiquierDetteService.js";
 import { BoutiquierDetteController } from "../controllers/boutiquier/BoutiquierDetteController.js";
+import { errorRoutes } from "../routes/error.routes.js";
+import { ErrorLayout } from "../layout/ErrorLayout.js";
 
 export class App {
   constructor(config) {
@@ -86,9 +88,11 @@ export class App {
     this.router.addLayout("auth", AuthLayout);
     this.router.addLayout("admin", AdminLayout)
     this.router.addLayout("boutiquier", BoutiquierLayout)
+    this.router.addLayout("error", ErrorLayout)
     this.router.addRoutes(authRoutes);
     this.router.addRoutes(adminRoutes)
     this.router.addRoutes(boutiquierRoutes)
+    this.router.addRoutes(errorRoutes)
 
     this.initModules();
     hydrateStoreFromLocalStorage(this.store, this.services.storage);
