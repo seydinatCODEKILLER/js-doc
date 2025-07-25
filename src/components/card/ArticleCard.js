@@ -93,14 +93,14 @@ export class ArticleCard {
     card.dataset.id = article.id;
 
     // Card Image (optionnelle pour les articles)
-    const cardImage = document.createElement("div");
-    cardImage.className =
-      "relative overflow-hidden h-48 bg-gray-100 dark:bg-gray-700 flex items-center justify-center";
+    // const cardImage = document.createElement("div");
+    // cardImage.className =
+    //   "relative overflow-hidden h-48 bg-gray-100 dark:bg-gray-700 flex items-center justify-center";
 
-    const img = document.createElement("div");
-    img.className = "text-4xl text-gray-400";
-    img.innerHTML = '<i class="ri-article-line"></i>';
-    cardImage.appendChild(img);
+    // const img = document.createElement("div");
+    // img.className = "text-4xl text-gray-400";
+    // img.innerHTML = '<i class="ri-article-line"></i>';
+    // cardImage.appendChild(img);
 
     // Card Body
     const cardBody = document.createElement("div");
@@ -155,7 +155,7 @@ export class ArticleCard {
     cardBody.appendChild(cardActions);
 
     // Assemble card
-    card.appendChild(cardImage);
+    // card.appendChild(cardImage);
     card.appendChild(cardBody);
 
     return card;
