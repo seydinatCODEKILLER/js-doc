@@ -17,8 +17,8 @@ export class Article {
     );
   }
  //c'étais juste pour faire un commit tu peux l'effacer si tu veux",
- //Encore une autre pour pouvoir obtenire tout sur ma nouvelle branch
- 
+ //Encore une autre pour pouvoir obtenir tout sur ma nouvelle branch
+
   toJSON() {
     return {
       id: this.id,
