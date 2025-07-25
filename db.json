@@ -44,6 +44,17 @@
       "role": "boutiquier",
       "delete": false,
       "deleted": false
+    },
+    {
+      "id": "5",
+      "nom": "Thiam",
+      "prenom": "Morales",
+      "email": "rp@ecole221.com",
+      "password": "Liverpool",
+      "avatar": "https://res.cloudinary.com/dvzo0zlpg/image/upload/v1753435424/xqatw0gylqhdwj4qyjaw.jpg",
+      "telephone": "+221778906578",
+      "role": "boutiquier",
+      "delete": false
     }
   ],
   "client": [
@@ -67,6 +78,10 @@
     {
       "id": "2",
       "id_utilisateur": "4"
+    },
+    {
+      "id": "3",
+      "id_utilisateur": "5"
     }
   ],
   "produits": [
