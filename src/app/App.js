@@ -14,6 +14,18 @@ import { AdminController } from "../controllers/AdminController.js";
 import { adminRoutes } from "../routes/admin.routes.js";
 import { AdminLayout } from "../layout/AdminLayout.js";
 import { Cloudinary } from "./core/Cloudinary.js";
+import { ProductService } from "../services/boutiquier/produit/ProduitService.js";
+import { ProductController } from "../controllers/boutiquier/ProductController.js";
+import { boutiquierRoutes } from "../routes/boutiquier_product.routes.js";
+import { BoutiquierLayout } from "../layout/BoutiquierLayout.js";
+import { ArticleService } from "../services/boutiquier/article/ArticleService.js";
+import { ArticleController } from "../controllers/boutiquier/ArticleController.js";
+import { BoutiquierClientService } from "../services/boutiquier/BoutiquierClientService.js";
+import { BoutiquierClientController } from "../controllers/boutiquier/BoutiquierClientController.js";
+import { BoutiquierDetteService } from "../services/boutiquier/BoutiquierDetteService.js";
+import { BoutiquierDetteController } from "../controllers/boutiquier/BoutiquierDetteController.js";
+import { errorRoutes } from "../routes/error.routes.js";
+import { ErrorLayout } from "../layout/ErrorLayout.js";
 
 export class App {
   constructor(config) {
@@ -40,12 +52,35 @@ export class App {
     });
 
     this.services.cloudinary = new Cloudinary(this);
+    this.services.products = new ProductService({
+      api: this.services.api,
+      storage: this.services.storage,
+    });
+
+    this.services.articles = new ArticleService({
+      api: this.services.api,
+      storage: this.services.storage,
+    });
+
+    this.services.boutiquier_client_services = new BoutiquierClientService({
+      api: this.services.api,
+      storage: this.services.storage,
+    });
+
+    this.services.boutiquier_dette_services = new BoutiquierDetteService({
+      api: this.services.api,
+      storage: this.services.storage,
+    });
 
     //les controllers de l'applications
 
     this.controllers = {
       Auth: new AuthController(this),
-      admin: new AdminController(this)
+      admin: new AdminController(this),
+      product: new ProductController(this),
+      article: new ArticleController(this),
+      boutiquier_client: new BoutiquierClientController(this),
+      boutiquier_dette: new BoutiquierDetteController(this)
     };
 
     this.router = new Router(this, {
@@ -54,8 +89,12 @@ export class App {
 
     this.router.addLayout("auth", AuthLayout);
     this.router.addLayout("admin", AdminLayout)
+    this.router.addLayout("boutiquier", BoutiquierLayout)
+    this.router.addLayout("error", ErrorLayout)
     this.router.addRoutes(authRoutes);
     this.router.addRoutes(adminRoutes)
+    this.router.addRoutes(boutiquierRoutes)
+    this.router.addRoutes(errorRoutes)
 
     this.initModules();
     hydrateStoreFromLocalStorage(this.store, this.services.storage);
