@@ -16,7 +16,7 @@ export class Article {
       Math.random().toString(36).substr(2, 5)
     );
   }
-
+ //c'étais juste pour faire un commit tu peux l'effacer si tu veux"
   toJSON() {
     return {
       id: this.id,
