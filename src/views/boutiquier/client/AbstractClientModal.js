@@ -304,9 +304,12 @@ export class AbstractClientModal {
     const formData = new FormData(this.form);
     const hasAccount = this.form.querySelector('[name="has_account"]').checked;
     const file = this.form.querySelector('[name="avatar"]').files[0];
-    const avatarBase64 = file
-      ? await this.convertToBase64(file)
-      : this.config.client?.avatar || null;
+    let avatarUrl = this.config.client?.avatar || null;
+    if (file) {
+      const cloudinaryService = this.app.getService("cloudinary");
+      const uploadResult = await cloudinaryService.uploadImage(file);
+      avatarUrl = uploadResult?.url || null;
+    }
     return {
       nom: formData.get("nom"),
       prenom: formData.get("prenom"),
@@ -316,7 +319,7 @@ export class AbstractClientModal {
         : null,
       id_boutiquier: this.app.store.state.user.id,
       password: hasAccount ? formData.get("password") : undefined,
-      avatar: avatarBase64,
+      avatar: avatarUrl,
       has_account: hasAccount,
     };
   }
