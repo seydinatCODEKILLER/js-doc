@@ -15,8 +15,8 @@ import { adminRoutes } from "../routes/admin.routes.js";
 import { clientRoutes } from "../routes/client.routes.js";
 import { AdminLayout } from "../layout/AdminLayout.js";
 import { ClientController } from "../controllers/ClientController.js";
-import { ArticleService } from "../services/client/ArticleService.js";
 import { ClientLayout } from "../layout/ClientLayout.js";
+import { ClientArticleService } from "../services/client/ClientArticleService.js";
 
 export class App {
   constructor(config) {
@@ -40,7 +40,7 @@ export class App {
       api: this.services.api,
       storage: this.services.storage,
     });
-    this.services.clients = new ArticleService({
+    this.services.clients = new ClientArticleService({
       api: this.services.api,
       storage: this.services.storage,
     });

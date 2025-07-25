@@ -2,7 +2,7 @@ import { AbstractService } from "../../app/core/AbstractService.js";
 import { Article } from "../../models/Article.js";
 
 
-export class ArticleService extends AbstractService {
+export class ClientArticleService extends AbstractService {
   constructor({ api }) {
     super({ api });
     this.api = api;
