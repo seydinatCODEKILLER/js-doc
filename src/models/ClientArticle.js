@@ -1,4 +1,4 @@
-export class Article {
+export class ClientArticle {
   constructor(data = {}) {
     this.id = data.id || this.generateId();
     this.nom = data.nom || "";

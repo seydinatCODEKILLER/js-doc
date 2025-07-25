@@ -1,5 +1,5 @@
 import { AbstractService } from "../../app/core/AbstractService.js";
-import { Article } from "../../models/Article.js";
+import { ClientArticle } from "../../models/ClientArticle.js";
 
 
 export class ClientArticleService extends AbstractService {
