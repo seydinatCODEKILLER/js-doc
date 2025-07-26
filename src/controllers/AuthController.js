@@ -49,4 +49,14 @@ export class AuthController {
     this.app.eventBus.publish("auth:logout");
     this.app.router.navigateTo("/");
   }
+
+  clearSession() {
+    this.service.logout();
+    this.app.store.setState({
+      user: null,
+      isAuthenticated: false,
+      role: null,
+    });
+    this.app.eventBus.publish("auth:logout");
+  }
 }

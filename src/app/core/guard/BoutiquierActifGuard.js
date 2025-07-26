@@ -8,6 +8,7 @@ export const BoutiquierActifGuard = {
 
     if (state.user?.deleted === true) {
       app.services.notifications.show("Votre compte est désactivé", "error");
+      app.getController("Auth").clearSession();
       return { redirect: "/unauthorized" };
     }
 
