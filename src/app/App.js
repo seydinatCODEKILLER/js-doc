@@ -56,6 +56,7 @@ export class App {
     });
 
     this.services.cloudinary = new Cloudinary(this);
+    
     this.services.products = new ProductService({
       api: this.services.api,
       storage: this.services.storage,
@@ -90,7 +91,7 @@ export class App {
       article: new ArticleController(this),
       boutiquier_client: new BoutiquierClientController(this),
       boutiquier_dette: new BoutiquierDetteController(this),
-      client_produit: new ProduitController(this)
+      client_produit: new ProduitController(this),
       boutiquier_dette: new BoutiquierDetteController(this)
     };
 

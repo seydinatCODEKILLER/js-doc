@@ -42,17 +42,6 @@ export const boutiquierRoutes = [
     guards: [BoutiquierActifGuard,AuthGuard, BoutiquierGuard],
   },
   {
-    path: "/boutiquier/dettes",
-    component: DetteView,
-    meta: {
-      layout: "boutiquier",
-      requiresAuth: true,
-      requiredRole: "boutiquier",
-      title: "Mes Dettes",
-    },
-    guards: [AuthGuard, BoutiquierGuard],
-  },
-  {
     path: "/boutiquier/clients",
     component: ClientView,
     meta: {
