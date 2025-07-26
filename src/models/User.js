@@ -25,7 +25,7 @@ export class User {
       avatar: this.avatar,
       telephone: this.telephone,
       role: this.role,
-      delete: this.deleted,
+      deleted: this.deleted,
     };
   }
 }

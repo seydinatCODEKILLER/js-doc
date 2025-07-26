@@ -5,6 +5,7 @@ export class AbstractBoutiquierModal {
   constructor(app, config = {}) {
     this.app = app;
     this.controller = app.getController("admin");
+    this.service = app.getService("admins");
     this.config = config;
     this.init();
   }
@@ -209,16 +210,43 @@ export class AbstractBoutiquierModal {
       email: {
         value: "",
         error: "",
-        validator: (v) =>
-          validators.required(v) ||
-          validators.email(v) ||
-          "Veuillez entrer un email valide",
+        validator: async (v) => {
+          if (!validators.required(v)) return "L'email est requis";
+          if (!validators.email(v)) return "Format email invalide";
+
+          const currentEmail = this.config?.boutiquier?.email || null;
+          if (currentEmail && currentEmail.toLowerCase() === v.toLowerCase()) {
+            return true;
+          }
+
+          return await validators.isUnique(
+            v,
+            this.service.emailExists.bind(this.service),
+            "email"
+          );
+        },
       },
       telephone: {
         value: "",
         error: "",
-        validator: (v) =>
-          !v || validators.phone(v) || "Le téléphone doit contenir 9 chiffres",
+        validator: async (v) => {
+          if (!v) return true;
+          if (!validators.senegalPhone(v)) {
+            return "Téléphone invalide (ex: 77XXXXXXX)";
+          }
+
+          const formattedPhone = `+221${v}`;
+          const currentPhone = this.config?.boutiquier?.telephone || null;
+          if (formattedPhone === currentPhone) {
+            return true;
+          }
+
+          return await validators.isUnique(
+            formattedPhone,
+            this.service.phoneExists.bind(this.service),
+            "telephone"
+          );
+        },
       },
       password: {
         value: "",
@@ -244,7 +272,7 @@ export class AbstractBoutiquierModal {
   async handleSubmit(e) {
     e.preventDefault();
 
-    if (!this.validateForm()) {
+    if (!(await this.validateForm())) {
       return;
     }
 
@@ -299,14 +327,17 @@ export class AbstractBoutiquierModal {
     );
   }
 
-  validateForm() {
-    let isValid = true;
-    Object.keys(this.fields).forEach((field) => {
-      this.validateField(field);
-      if (this.fields[field].error) isValid = false;
-    });
-    return isValid;
+  async validateForm() {
+  let isValid = true;
+
+  for (const field of Object.keys(this.fields)) {
+    await this.validateField(field);
+    if (this.fields[field].error) isValid = false;
   }
+
+  return isValid;
+}
+
 
   convertToBase64(file) {
     return new Promise((resolve, reject) => {
@@ -319,7 +350,7 @@ export class AbstractBoutiquierModal {
     });
   }
 
-  validateField(name) {
+  async validateField(name) {
     if (!this.fields[name]) return;
 
     const input = this.form.querySelector(`[name="${name}"]`);
@@ -328,8 +359,8 @@ export class AbstractBoutiquierModal {
     const value = input.type === "file" ? input.files[0] : input.value;
     this.fields[name].value = value;
 
-    const error = this.fields[name].validator(value);
-    this.fields[name].error = typeof error === "string" ? error : "";
+    const result = await this.fields[name].validator(value);
+  this.fields[name].error = typeof result === "string" ? result : "";
 
     this.displayError(name);
   }

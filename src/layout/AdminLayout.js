@@ -18,16 +18,16 @@ export class AdminLayout {
         <main id="main-content" class="overflow-auto"></main>
       </div>
     `;
+    const { avatar, nom, prenom } = this.app.store.state.user;
 
     const header = new ResponsiveHeader({
       currentPage: "Admin",
-      userName: this.app.store.state.user?.prenom || "Admin",
+      userName: `${prenom} ${nom}` || "Admin",
       onMenuClick: () => this.toggleSidebar(),
       onThemeChange: () => this.toggleTheme(),
     });
 
     header.render(this.container.querySelector("#header-container"));
-    const { avatar, nom, prenom } = this.app.store.state.user;
 
     this.sidebarInstance = new Sidebar({
       logo: {
