@@ -13,6 +13,7 @@ import { AdminService } from "../services/admin/AdminService.js";
 import { AdminController } from "../controllers/AdminController.js";
 import { adminRoutes } from "../routes/admin.routes.js";
 import { AdminLayout } from "../layout/AdminLayout.js";
+import { Cloudinary } from "./core/Cloudinary.js";
 import { ProductService } from "../services/boutiquier/produit/ProduitService.js";
 import { ProductController } from "../controllers/boutiquier/ProductController.js";
 import { boutiquierRoutes } from "../routes/boutiquier_product.routes.js";
@@ -32,6 +33,7 @@ import { clientLayout } from "../layout/ClientLayout.js";
 
 export class App {
   constructor(config) {
+    this.config = config;
     this.eventBus = new EventBus();
     this.store = new Store(config.initialState || {});
 
@@ -53,6 +55,7 @@ export class App {
       storage: this.services.storage,
     });
 
+    this.services.cloudinary = new Cloudinary(this);
     this.services.products = new ProductService({
       api: this.services.api,
       storage: this.services.storage,
@@ -72,12 +75,11 @@ export class App {
       api: this.services.api,
       storage: this.services.storage,
     });
-
+    
     this.services.client_produits = new ClientArticleService({
       api: this.services.api,
       storage: this.services.storage,
     });
-
 
     //les controllers de l'applications
 
@@ -89,6 +91,7 @@ export class App {
       boutiquier_client: new BoutiquierClientController(this),
       boutiquier_dette: new BoutiquierDetteController(this),
       client_produit: new ProduitController(this)
+      boutiquier_dette: new BoutiquierDetteController(this)
     };
 
     this.router = new Router(this, {
@@ -100,6 +103,7 @@ export class App {
     this.router.addLayout("boutiquier", BoutiquierLayout)
     this.router.addLayout("error", ErrorLayout)
     this.router.addLayout("client", clientLayout)
+
     this.router.addRoutes(authRoutes);
     this.router.addRoutes(adminRoutes)
     this.router.addRoutes(clientRoutes)
