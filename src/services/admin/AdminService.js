@@ -14,8 +14,27 @@ export class AdminService extends AbstractService {
     return boutiquiers;
   }
 
+  async emailExists(email) {
+    const users = await this.api.get("/utilisateurs");
+    return users.some((u) => u.email?.toLowerCase() === email.toLowerCase());
+  }
+
+  async phoneExists(telephone) {
+    if (!telephone) return false;
+    const users = await this.api.get("/utilisateurs");
+    return users.some((u) => u.telephone === telephone);
+  }
+
   async createBoutiquier(data) {
     try {
+          if (await this.emailExists(data.email)) {
+            throw new Error("Cet email est déjà utilisé");
+          }
+
+          if (await this.phoneExists(data.telephone)) {
+            throw new Error("Ce numéro est déjà utilisé");
+          }
+
       const idUtilisateur = String(await this.generateId("/utilisateurs"));
       const idBoutiquier = String(await this.generateId("/boutiquier"));
 
