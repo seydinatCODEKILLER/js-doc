@@ -17,9 +17,9 @@ export class AuthView extends AbstractView {
         <p class="text-gray-800 font-medium">E-Boutique</p>
       </div>
         <form id="loginForm" class="w-full md:w-[340px] lg:w-[400px] p-3 mt-4">
-        <p class="text-gray-600 text-sm font-medium w-full md:w-90 mb-5">
-          Bienvenue sur la plateforme de gestion de dettes ! Connectez-vous pour
-          accéder à votre espace personnel
+        <p class="text-gray-600 text-sm font-medium w-full md:w-96 mb-5">
+          Bienvenue sur la plateforme de <span class="badge badge-soft badge-primary">gestion de dettes</span> ! Connectez-vous pour
+          accéder à votre <span class="badge badge-soft badge-info">espace personnel</span>
         </p>
         <div class="mb-4">
           <label class="block text-gray-500 font-medium text-sm mb-2">Email</label>
@@ -52,7 +52,7 @@ export class AuthView extends AbstractView {
           id="loginButton"
           class="w-full btn btn-primary text-white font-medium"
         >
-          <span id="buttonText">Se connecter</span>
+          <span id="buttonText">Se connectez</span>
           <span id="spinner" class="loading loading-spinner hidden"></span>
         </button>
       </form>

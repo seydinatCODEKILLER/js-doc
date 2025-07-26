@@ -32,20 +32,20 @@ function validateType(type) {
   let bgColor = "";
   switch (type) {
     case "success":
-      bgColor = "bg-green-500";
+      bgColor = "bg-green-400";
       break;
     case "error":
-      bgColor = "bg-red-500";
+      bgColor = "bg-red-400";
       break;
     case "warning":
-      bgColor = "bg-yellow-500";
+      bgColor = "bg-yellow-400";
       break;
     case "info":
-      bgColor = "bg-blue-500";
+      bgColor = "bg-blue-400";
       break;
 
     default:
-      bgColor = "bg-green-500";
+      bgColor = "bg-green-400";
       break;
   }
   return bgColor;
