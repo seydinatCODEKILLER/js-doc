@@ -5,6 +5,7 @@ export class ResponsiveHeader {
   constructor(config) {
     this.config = {
       currentYear: new Date().getFullYear(),
+      subtitle: "Espace administrateur",
       onThemeChange: () => {},
       onMenuClick: () => {},
       ...config,
@@ -98,7 +99,7 @@ export class ResponsiveHeader {
   #createWelcomeMessage() {
     const msg = document.createElement("h1");
     msg.className = "text-lg font-medium text-gray-700 hidden lg:flex";
-    msg.textContent = `Espace administrateur, ${this.config.userName}👋`;
+    msg.textContent = `${this.config.subtitle}, ${this.config.userName}👋`;
     return msg;
   }
 
