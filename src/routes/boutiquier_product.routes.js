@@ -1,4 +1,5 @@
 import { AuthGuard } from "../app/core/guard/AuthGuard.js";
+import { BoutiquierActifGuard } from "../app/core/guard/BoutiquierActifGuard.js";
 import { BoutiquierGuard } from "../app/core/guard/RoleGuard.js";
 import { ArticleView } from "../views/boutiquier/article/ArticleListView.js";
 import { ClientView } from "../views/boutiquier/client/ClientListView.js";
@@ -16,7 +17,7 @@ export const boutiquierRoutes = [
       requiredRole: "boutiquier",
       title: "Mes produits",
     },
-    guards: [AuthGuard, BoutiquierGuard],
+    guards: [BoutiquierActifGuard,AuthGuard, BoutiquierGuard],
   },
   {
     path: "/boutiquier/articles",
@@ -27,7 +28,7 @@ export const boutiquierRoutes = [
       requiredRole: "boutiquier",
       title: "Mes articles",
     },
-    guards: [AuthGuard, BoutiquierGuard],
+    guards: [BoutiquierActifGuard,AuthGuard, BoutiquierGuard],
   },
   {
     path: "/boutiquier/dettes",
@@ -38,7 +39,7 @@ export const boutiquierRoutes = [
       requiredRole: "boutiquier",
       title: "Mes Dettes",
     },
-    guards: [AuthGuard, BoutiquierGuard],
+    guards: [BoutiquierActifGuard,AuthGuard, BoutiquierGuard],
   },
   {
     path: "/boutiquier/clients",
@@ -49,6 +50,6 @@ export const boutiquierRoutes = [
       requiredRole: "boutiquier",
       title: "Mes Clients",
     },
-    guards: [AuthGuard, BoutiquierGuard],
+    guards: [BoutiquierActifGuard,AuthGuard, BoutiquierGuard],
   },
 ];
