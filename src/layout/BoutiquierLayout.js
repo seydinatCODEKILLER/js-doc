@@ -18,16 +18,17 @@ export class BoutiquierLayout {
         <main id="main-content" class="overflow-auto"></main>
       </div>
     `;
+    const { avatar, nom, prenom } = this.app.store.state.user;
 
     const header = new ResponsiveHeader({
       currentPage: "Boutiquier",
-      userName: this.app.store.state.user?.prenom || "Admin",
+      subtitle: "Espace boutiquier",
+      userName: `${prenom} ${nom}` || "Boutiquier",
       onMenuClick: () => this.toggleSidebar(),
       onThemeChange: () => this.toggleTheme(),
     });
 
     header.render(this.container.querySelector("#header-container"));
-    const { avatar, nom, prenom } = this.app.store.state.user;
 
     this.sidebarInstance = new Sidebar({
       logo: {

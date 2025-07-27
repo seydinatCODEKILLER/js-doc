@@ -6,6 +6,7 @@ export class ProductController {
     this.app = app;
     this.service = app.getService("products");
     this.articleService = app.getService("articles");
+    this.boutiquier = null;
     this.products = [];
     this.articles = [];
     this.cache = {
@@ -26,12 +27,12 @@ export class ProductController {
       userId,
       "boutiquier"
     );
-    const products = await this.service.getProducts(boutiquier.id);
+    this.boutiquier = boutiquier;
+    const products = await this.service.getProducts(this.boutiquier.id);
 
     this.products = products;
     this.cache.products = products;
     this.cache.lastUpdated = Date.now();
-
     return products;
   }
 
@@ -42,17 +43,9 @@ export class ProductController {
         return this.articles;
       }
 
-      const userId = this.app.store.state.user.id;
-      const boutiquier = await this.service.getActorByIdUser(
-        userId,
-        "boutiquier"
+      const articles = await this.articleService.getArticles(
+        this.boutiquier.id
       );
-
-      if (!boutiquier) {
-        throw new Error("Boutiquier non trouvé");
-      }
-
-      const articles = await this.articleService.getArticles(boutiquier.id);
       this.articles = articles;
       this.cache.articles = articles;
       this.cache.lastUpdated = Date.now();
@@ -69,11 +62,13 @@ export class ProductController {
 
   async createProduct(ProductData) {
     try {
-      console.log(ProductData);
 
-      const result = await this.service.createProduct(ProductData);
+      const result = await this.service.createProduct(
+        ProductData,
+        this.boutiquier.id
+      );
 
-      this.cache.products = null;
+      this.clearCache();
       this.app.services.notifications.show(
         "Boutiquier créé avec succès",
         "success"
@@ -97,44 +92,10 @@ export class ProductController {
     );
   }
 
-  async handleProductAction(action, id, actionType) {
-    switch (action) {
-      case "edit":
-        return this.#editProduct(id);
-      case "toggleStatus":
-        return actionType === "delete"
-          ? this.#deleteProduct(id)
-          : this.#restoreProduct(id);
-      default:
-        throw new Error(`Action ${action} non supportée`);
-    }
-  }
-
-  async #editProduct(id) {
-    try {
-      const product = this.cache.products?.find((b) => b.id == id);
-
-      if (!product) {
-        throw new Error("produit non trouvé");
-      }
-
-      const editModal = new ProductEditModal(this.app, product);
-      await editModal.open();
-    } catch (error) {
-      console.log(error);
-
-      this.app.services.notifications.show(
-        error.message || "Erreur lors de l'édition",
-        "error"
-      );
-    }
-  }
-
   async updateProduct(id, data) {
     try {
       const result = await this.service.updateProduct(id, data);
-
-      this.cache.products = null;
+      this.clearCache();
       this.app.services.notifications.show(
         "produit mis à jour avec succès",
         "success"
@@ -151,48 +112,33 @@ export class ProductController {
     }
   }
 
-  async #deleteProduct(id) {
-    const confirmed = await this.showDeleteConfirmation();
-    if (!confirmed) return;
-
-    await this.service.softDeleteProduit(id);
-    this.cache.products = null;
-
-    this.app.services.notifications.show(
-      "produits désactivé avec succès",
-      "success"
-    );
-
-    this.app.eventBus.publish("produits:updated");
-  }
-  catch(error) {
-    this.app.services.notifications.show(
-      error.message || "Erreur lors de la désactivation",
-      "error"
-    );
-    throw error;
-  }
-
-  async showDeleteConfirmation() {
-    return new Promise((resolve) => {
-      Modal.confirm({
-        title: "Confirmer la désactivation",
-        content: "Êtes-vous sûr de vouloir désactiver ce produits ?",
-        confirmText: "Désactiver",
-        cancelText: "Annuler",
-        onConfirm: () => resolve(true),
-        onCancel: () => resolve(false),
-      });
-    });
-  }
-
-  async #restoreProduct(id) {
+  async deleteProduct(id) {
     try {
-      const confirmed = await this.showRestoreConfirmation();
-      if (!confirmed) return;
+      await this.service.softDeleteProduit(id);
+      this.clearCache();
+      this.app.services.notifications.show(
+        "produits désactivé avec succès",
+        "success"
+      );
 
+      this.app.eventBus.publish("produits:updated");
+    } catch (error) {
+      this.app.services.notifications.show(
+        error.message || "Erreur lors de la désactivation",
+        "error"
+      );
+      throw error;
+    }
+  }
+
+  clearCache() {
+    this.cache.products = null;
+  }
+
+  async restoreProduct(id) {
+    try {
       await this.service.restoreProduit(id);
-      this.cache.products = null;
+      this.clearCache();
 
       this.app.services.notifications.show(
         "produit restauré avec succès",
@@ -202,19 +148,6 @@ export class ProductController {
     } catch (error) {
       this.handleActionError(error, "restauration");
     }
-  }
-
-  async showRestoreConfirmation() {
-    return new Promise((resolve) => {
-      Modal.confirm({
-        title: "Confirmer la restauration",
-        content: "Êtes-vous sûr de vouloir restaurer ce produit ?",
-        confirmText: "Restaurer",
-        cancelText: "Annuler",
-        onConfirm: () => resolve(true),
-        onCancel: () => resolve(false),
-      });
-    });
   }
 
   handleActionError(error, actionName) {

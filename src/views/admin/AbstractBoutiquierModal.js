@@ -338,7 +338,6 @@ export class AbstractBoutiquierModal {
   return isValid;
 }
 
-
   convertToBase64(file) {
     return new Promise((resolve, reject) => {
       if (!file) resolve(null);

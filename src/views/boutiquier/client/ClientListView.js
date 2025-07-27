@@ -1,7 +1,9 @@
 import { FloatingActionButton } from "../../../components/button/FloatingButton.js";
 import { ClientCard } from "../../../components/card/ClientCard.js";
+import { Modal } from "../../../components/modal/Modal.js";
 import { ModernTable } from "../../../components/table/Table.js";
 import { AbstractView } from "../../AbstractView.js";
+import { ClientEditModal } from "./ClientEditModal.js";
 import { ClientFormModal } from "./ClientFormModal.js";
 
 export class ClientView extends AbstractView {
@@ -11,7 +13,6 @@ export class ClientView extends AbstractView {
     this.currentView = "cards";
     this.localClients = [];
     this.formModal = new ClientFormModal(app);
-    
   }
 
   async setup() {
@@ -136,7 +137,7 @@ export class ClientView extends AbstractView {
         ],
       },
       onAction: (action, id, actionType) =>
-        this.controller.handleClientAction(action, id, actionType),
+        this.handleClientAction(action, id, actionType),
     });
 
     container.appendChild(cards.render());
@@ -192,7 +193,7 @@ export class ClientView extends AbstractView {
         ],
       },
       onAction: (action, id, actionType) =>
-        this.controller.handleClientAction(action, id, actionType),
+        this.handleClientAction(action, id, actionType),
     });
     container.appendChild(table.render());
     table.update(this.localClients, 1);
@@ -213,5 +214,78 @@ export class ClientView extends AbstractView {
 
   getStatusButtonClass(item) {
     return item.deleted ? "btn-success" : "btn-error";
+  }
+
+  async handleClientAction(action, id, actionType) {
+    console.log(id)
+    const client = this.findClientById(id);
+    console.log(client)
+    if (!client) return;
+    try {
+      switch (action) {
+        case "edit":
+          await this.handleEditAction(client);
+          break;
+        case "toggleStatus":
+          await this.handleStatusToggle(id, actionType);
+          break;
+        default:
+          console.warn(`Action non gérée: ${action}`);
+      }
+    } catch (error) {
+      this.handleActionError(error);
+    }
+  }
+
+  findClientById(id) {
+    return this.localClients.find((b) => b.id == id);
+  }
+
+  async handleEditAction(client) {
+    const modal = new ClientEditModal(this.app, client);
+    modal.open();
+  }
+
+  async handleStatusToggle(id, actionType) {
+    const isDeleteAction = actionType === "delete";
+    const confirmed = await this.showConfirmation(
+      isDeleteAction
+        ? "Voulez vous vraiment Désactiver ce client ?"
+        : "Voulez vous vraiment Restaurer ce client ?"
+    );
+
+    if (!confirmed) return;
+
+    await (isDeleteAction
+      ? this.controller.deleteClient(id)
+      : this.controller.restoreClient(id));
+
+    await this.refreshView();
+  }
+
+  handleActionError(error) {
+    console.error("Erreur lors de la gestion de l'action:", error);
+    this.app.services.notifications.show(
+      error.message || "Une erreur est survenue",
+      "error"
+    );
+  }
+
+  async refreshView() {
+    this.localClients = await this.controller.loadClients(true);
+    this.renderContent();
+  }
+
+  async showConfirmation(message) {
+    return new Promise((resolve) => {
+      Modal.confirm({
+        title: "Confirmation",
+        content: message,
+        confirmText: "Confirmer",
+        cancelText: "Annuler",
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
   }
 }

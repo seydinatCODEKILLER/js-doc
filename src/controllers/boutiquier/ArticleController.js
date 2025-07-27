@@ -1,11 +1,11 @@
-import { Modal } from "../../components/modal/Modal.js";
-import { ArticleEditModal } from "../../views/boutiquier/article/articleEditModal.js";
+
 
 export class ArticleController {
   constructor(app) {
     this.app = app;
     this.service = app.getService("articles");
     this.articles = [];
+    this.boutiquier = null;
     this.cache = {
       articles: null,
       lastUpdated: null,
@@ -29,7 +29,9 @@ export class ArticleController {
         throw new Error("Boutiquier non trouvé");
       }
 
-      const articles = await this.service.getArticles(boutiquier.id);
+      this.boutiquier = boutiquier;
+
+      const articles = await this.service.getArticles(this.boutiquier.id);
       this.articles = articles;
       this.cache.articles = articles;
       this.cache.lastUpdated = Date.now();
@@ -46,9 +48,12 @@ export class ArticleController {
 
   async createArticle(articleData) {
     try {
-      const result = await this.service.createArticle(articleData);
+      const result = await this.service.createArticle(
+        articleData,
+        this.boutiquier.id
+      );
 
-      this.cache.products = null;
+      this.clearCache();
       this.app.services.notifications.show(
         "article créé avec succès",
         "success"
@@ -72,44 +77,12 @@ export class ArticleController {
     );
   }
 
-  async handleArticleAction(action, id, actionType) {
-    switch (action) {
-      case "edit":
-        return this.#editArticle(id);
-      case "toggleStatus":
-        return actionType === "delete"
-          ? this.#deleteArticle(id)
-          : this.#restoreArticle(id);
-      default:
-        throw new Error(`Action ${action} non supportée`);
-    }
-  }
-
-  async #editArticle(id) {
-    try {
-      const product = this.cache.articles?.find((b) => b.id == id);
-
-      if (!product) {
-        throw new Error("article non trouvé");
-      }
-
-      const editModal = new ArticleEditModal(this.app, product);
-      editModal.open();
-    } catch (error) {
-      console.log(error);
-
-      this.app.services.notifications.show(
-        error.message || "Erreur lors de l'édition",
-        "error"
-      );
-    }
-  }
 
   async updateArticle(id, data) {
     try {
       const result = await this.service.updateArticle(id, data);
 
-      this.cache.articles = null;
+      this.clearCache();
       this.app.services.notifications.show(
         "article mis à jour avec succès",
         "success"
@@ -126,49 +99,36 @@ export class ArticleController {
     }
   }
 
-  async #deleteArticle(id) {
-    const confirmed = await this.showDeleteConfirmation();
-    if (!confirmed) return;
-
-    await this.service.softDeleteArticle(id);
+  clearCache() {
     this.cache.articles = null;
-
-    this.app.services.notifications.show(
-      "produits désactivé avec succès",
-      "success"
-    );
-
-    this.app.eventBus.publish("articles:updated");
-  }
-  catch(error) {
-    this.app.services.notifications.show(
-      error.message || "Erreur lors de la désactivation",
-      "error"
-    );
-    throw error;
   }
 
-  async showDeleteConfirmation() {
-    return new Promise((resolve) => {
-      Modal.confirm({
-        title: "Confirmer la désactivation",
-        content: "Êtes-vous sûr de vouloir désactiver ce article ?",
-        confirmText: "Désactiver",
-        cancelText: "Annuler",
-        onConfirm: () => resolve(true),
-        onCancel: () => resolve(false),
-      });
-    });
-  }
-
-  async #restoreArticle(id) {
+  async deleteArticle(id) {
     try {
-      const confirmed = await this.showRestoreConfirmation();
-      if (!confirmed) return;
+
+      await this.service.softDeleteArticle(id);
+      this.clearCache();
+
+      this.app.services.notifications.show(
+        "produits désactivé avec succès",
+        "success"
+      );
+
+      this.app.eventBus.publish("articles:updated");
+    } catch (error) {
+      this.app.services.notifications.show(
+        error.message || "Erreur lors de la désactivation",
+        "error"
+      );
+      throw error;
+    }
+  }
+
+  async restoreArticle(id) {
+    try {
 
       await this.service.restoreArticle(id);
-      this.cache.products = null;
-
+      this.clearCache();
       this.app.services.notifications.show(
         "article restauré avec succès",
         "success"
@@ -177,26 +137,5 @@ export class ArticleController {
     } catch (error) {
       this.handleActionError(error, "restauration");
     }
-  }
-
-  async showRestoreConfirmation() {
-    return new Promise((resolve) => {
-      Modal.confirm({
-        title: "Confirmer la restauration",
-        content: "Êtes-vous sûr de vouloir restaurer ce article ?",
-        confirmText: "Restaurer",
-        cancelText: "Annuler",
-        onConfirm: () => resolve(true),
-        onCancel: () => resolve(false),
-      });
-    });
-  }
-
-  handleActionError(error, actionName) {
-    this.app.services.notifications.show(
-      error.message || `Erreur lors de la ${actionName}`,
-      "error"
-    );
-    throw error;
   }
 }

@@ -11,7 +11,6 @@ export class Product {
     this.date_creation =
       data.date_creation || new Date().toISOString().split("T")[0];
     this.deleted = data.deleted || false;
-    this.categorie = data.categorie || "";
   }
 
   generateId() {
@@ -32,7 +31,6 @@ export class Product {
       image: this.image,
       id_boutiquier: this.id_boutiquier,
       article_id: this.article_id,
-      categorie: this.categorie,
       date_creation: this.date_creation,
       deleted: Boolean(this.deleted),
     };

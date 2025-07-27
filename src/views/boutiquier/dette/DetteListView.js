@@ -1,3 +1,4 @@
+import { Modal } from "../../../components/modal/Modal.js";
 import { ModernTable } from "../../../components/table/Table.js";
 import { AbstractView } from "../../AbstractView.js";
 
@@ -11,8 +12,6 @@ export class DetteView extends AbstractView {
   async setup() {
     try {
       this.localDettes = await this.controller.loadDettes();
-      console.log(this.localDettes);
-
       this.renderHeader();
       this.renderContent();
     } catch (error) {
@@ -26,7 +25,7 @@ export class DetteView extends AbstractView {
     header.className = "flex justify-between items-center py-6 px-3";
     header.innerHTML = `
       <div>
-        <h2 class="text-xl font-bold">Gestion des articles</h2>
+        <h2 class="text-xl font-bold">Gestion des dettes</h2>
         <p class="text-sm text-gray-600">
           ${this.localDettes.length} dettes
         </p>
@@ -49,8 +48,6 @@ export class DetteView extends AbstractView {
   }
 
   renderTableView(container) {
-    console.log("dettes:", this.localDettes);
-
     const table = new ModernTable({
       columns: [
         {
@@ -112,7 +109,7 @@ export class DetteView extends AbstractView {
           },
         ],
       },
-      onAction: (action, id) => this.controller.handleDetteAction(action, id),
+      onAction: async (action, id) => await this.handleDetteAction(action, id),
       searchable: true,
     });
     container.appendChild(table.render());
@@ -123,5 +120,72 @@ export class DetteView extends AbstractView {
 
   cleanup() {
     if (this.fab) this.fab.destroy();
+  }
+
+  async handleDetteAction(action, id) {
+    try {
+      switch (action) {
+        case "accept":
+          await this.acceptDette(id);
+          break;
+        case "reject":
+          await this.rejectDette(id);
+          break;
+        default:
+          console.warn("Action non gérée:", action);
+      }
+    } catch (error) {
+      console.error("Erreur action dette:", error);
+      this.app.services.notifications.show(
+        error.message || "Erreur lors de l'action",
+        "error"
+      );
+    }
+  }
+
+  async acceptDette(id){
+    console.log("Accepting dette with id:", id);
+    
+    const confirmed = await this.showConfirmation("Voulez vous vraiment accepter cette dette ?");
+    if (!confirmed) return;
+    await this.controller.acceptDette(id);
+    this.refreshView();
+  }
+
+  async rejectDette(id) {
+    const confirmed = await this.showConfirmation("Voulez vous vraiment refuser cette dette ?");
+    if (!confirmed) return;
+    await this.controller.rejectDette(id);
+    this.refreshView();
+  }
+
+  findDetteById(id) {
+    return this.localDettes.find((b) => b.id == id);
+  }
+
+  handleActionError(error) {
+    console.error("Erreur lors de la gestion de l'action:", error);
+    this.app.services.notifications.show(
+      error.message || "Une erreur est survenue",
+      "error"
+    );
+  }
+
+  async refreshView() {
+    this.localDettes = await this.controller.loadDettes(true);
+    this.renderContent();
+  }
+
+  async showConfirmation(message) {
+    return new Promise((resolve) => {
+      Modal.confirm({
+        title: "Confirmation",
+        content: message,
+        confirmText: "Confirmer",
+        cancelText: "Annuler",
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
   }
 }
