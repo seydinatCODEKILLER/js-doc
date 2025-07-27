@@ -5,9 +5,9 @@ export class AbstractProductModal {
   constructor(app, config = {}) {
     this.app = app;
     this.controller = app.getController("product");
+    this.service = app.getService("products");
     this.config = config;
     this.articles = [];
-    // this.init();
   }
 
   async open() {
@@ -232,13 +232,24 @@ export class AbstractProductModal {
       nom: {
         value: "",
         error: "",
-        validator: (v) =>
-          validators.required(v) || "Le nom du produit est requis",
+        validator: async (v) => {
+          if (!validators.required(v)) return "Le nom du produit est requis";
+
+          const currentName = this.config?.product?.nom || null;
+          if (currentName && currentName.toLowerCase() === v.toLowerCase()) {
+            return true;
+          }
+          return await validators.isUnique(
+            v,
+            this.service.nameExists.bind(this.service),
+            "ce produit"
+          );
+        },
       },
       article_id: {
         value: "",
         error: "",
-        validator: (v) => true, // Optionnel - pas de validation nécessaire
+        validator: (v) => true,
       },
       prix: {
         value: "",
@@ -276,7 +287,7 @@ export class AbstractProductModal {
   async handleSubmit(e) {
     e.preventDefault();
 
-    if (!this.validateForm()) {
+    if (!(await this.validateForm())) {
       return;
     }
 
@@ -300,9 +311,12 @@ export class AbstractProductModal {
   async getFormData() {
     const formData = new FormData(this.form);
     const file = this.form.querySelector('[name="image"]').files[0];
-    const imageBase64 = file
-      ? await this.convertToBase64(file)
-      : this.config.product?.image || null;
+    let avatarUrl = this.config.product?.image || null;
+    if (file) {
+      const cloudinaryService = this.app.getService("cloudinary");
+      const uploadResult = await cloudinaryService.uploadImage(file);
+      avatarUrl = uploadResult?.url || null;
+    }
 
     return {
       nom: formData.get("nom"),
@@ -312,8 +326,7 @@ export class AbstractProductModal {
       seuil_alerte: formData.get("seuil_alerte")
         ? parseInt(formData.get("seuil_alerte"))
         : 5,
-      image: imageBase64,
-      id_boutiquier: this.app.store.state.user.id,
+      image: avatarUrl,
     };
   }
 
@@ -329,12 +342,12 @@ export class AbstractProductModal {
     );
   }
 
-  validateForm() {
+  async validateForm() {
     let isValid = true;
-    Object.keys(this.fields).forEach((field) => {
-      this.validateField(field);
+    for (const field of Object.keys(this.fields)) {
+      await this.validateField(field);
       if (this.fields[field].error) isValid = false;
-    });
+    }
     return isValid;
   }
 
@@ -349,7 +362,7 @@ export class AbstractProductModal {
     });
   }
 
-  validateField(name) {
+  async validateField(name) {
     if (!this.fields[name]) return;
 
     const input = this.form.querySelector(`[name="${name}"]`);
@@ -358,7 +371,7 @@ export class AbstractProductModal {
     const value = input.type === "file" ? input.files[0] : input.value;
     this.fields[name].value = value;
 
-    const error = this.fields[name].validator(value);
+    const error = await this.fields[name].validator(value);
     this.fields[name].error = typeof error === "string" ? error : "";
 
     this.displayError(name);

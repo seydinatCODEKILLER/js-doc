@@ -1,9 +1,10 @@
 import { FloatingActionButton } from "../../../components/button/FloatingButton.js";
 import { ProductCard } from "../../../components/card/ProductCard.js";
+import { Modal } from "../../../components/modal/Modal.js";
 import { ModernTable } from "../../../components/table/Table.js";
 import { AbstractView } from "../../AbstractView.js";
+import { ProductEditModal } from "./ProductEditModal.js";
 import { ProductFormModal } from "./ProductFormModal.js";
-
 
 export class ProductView extends AbstractView {
   constructor(app, { params, route } = {}) {
@@ -17,7 +18,6 @@ export class ProductView extends AbstractView {
   async setup() {
     try {
       this.localProducts = await this.controller.loadProducts();
-
       this.renderHeader();
       this.renderViewToggle();
       this.renderContent();
@@ -136,7 +136,7 @@ export class ProductView extends AbstractView {
         ],
       },
       onAction: (action, id, actionType) =>
-        this.controller.handleProductAction(action, id, actionType),
+        this.handleProductAction(action, id, actionType),
     });
 
     container.appendChild(cards.render());
@@ -185,7 +185,7 @@ export class ProductView extends AbstractView {
         ],
       },
       onAction: (action, id, actionType) =>
-        this.controller.handleProductAction(action, id, actionType),
+        this.handleProductAction(action, id, actionType),
     });
     container.appendChild(table.render());
     table.update(this.localProducts, 1);
@@ -206,5 +206,76 @@ export class ProductView extends AbstractView {
 
   getStatusButtonClass(item) {
     return item.deleted ? "btn-success" : "btn-error";
+  }
+
+  async handleProductAction(action, id, actionType) {
+    const article = this.findProductById(id);
+    if (!article) return;
+    try {
+      switch (action) {
+        case "edit":
+          await this.handleEditAction(article);
+          break;
+        case "toggleStatus":
+          await this.handleStatusToggle(id, actionType);
+          break;
+        default:
+          console.warn(`Action non gérée: ${action}`);
+      }
+    } catch (error) {
+      this.handleActionError(error);
+    }
+  }
+
+  findProductById(id) {
+    return this.localProducts.find((b) => b.id == id);
+  }
+
+  async handleEditAction(product) {
+    const modal = new ProductEditModal(this.app, product);
+    modal.open();
+  }
+
+  async handleStatusToggle(id, actionType) {
+    const isDeleteAction = actionType === "delete";
+    const confirmed = await this.showConfirmation(
+      isDeleteAction
+        ? "Voulez vous vraiment Désactiver cette produit ?"
+        : "Voulez vous vraiment Restaurer cette produit ?"
+    );
+
+    if (!confirmed) return;
+
+    await (isDeleteAction
+      ? this.controller.deleteProduct(id)
+      : this.controller.restoreProduct(id));
+
+    await this.refreshView();
+  }
+
+  handleActionError(error) {
+    console.error("Erreur lors de la gestion de l'action:", error);
+    this.app.services.notifications.show(
+      error.message || "Une erreur est survenue",
+      "error"
+    );
+  }
+
+  async refreshView() {
+    this.localProducts = await this.controller.loadProducts(true);
+    this.renderContent();
+  }
+
+  async showConfirmation(message) {
+    return new Promise((resolve) => {
+      Modal.confirm({
+        title: "Confirmation",
+        content: message,
+        confirmText: "Confirmer",
+        cancelText: "Annuler",
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
   }
 }

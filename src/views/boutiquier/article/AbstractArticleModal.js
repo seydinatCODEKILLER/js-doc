@@ -6,6 +6,7 @@ export class AbstractArticleModal {
     this.app = app;
     this.controller = app.getController("article");
     this.config = config;
+    this.service = app.getService("articles");
     this.init();
   }
 
@@ -112,6 +113,21 @@ export class AbstractArticleModal {
         error: "",
         validator: (v) =>
           validators.required(v) || "Le titre de l'article est requis",
+        validator: async (v) => {
+          if (!validators.required(v))
+            return "Le titre de l'article est requis";
+
+          const currentName = this.config?.article?.titre || null;
+          if (currentName && currentName.toLowerCase() === v.toLowerCase()) {
+            return true;
+          }
+
+          return await validators.isUnique(
+            v,
+            this.service.nameExists.bind(this.service),
+            "ce titre d'article"
+          );
+        },
       },
       contenu: {
         value: "",
@@ -129,7 +145,7 @@ export class AbstractArticleModal {
   async handleSubmit(e) {
     e.preventDefault();
 
-    if (!this.validateForm()) {
+    if (!(await this.validateForm())) {
       return;
     }
 
@@ -156,7 +172,6 @@ export class AbstractArticleModal {
     return {
       titre: formData.get("titre"),
       contenu: formData.get("contenu"),
-      id_boutiquier: this.app.store.state.user.id,
     };
   }
 
@@ -172,16 +187,16 @@ export class AbstractArticleModal {
     );
   }
 
-  validateForm() {
+  async validateForm() {
     let isValid = true;
-    Object.keys(this.fields).forEach((field) => {
-      this.validateField(field);
+    for (const field of Object.keys(this.fields)) {
+      await this.validateField(field);
       if (this.fields[field].error) isValid = false;
-    });
+    }
     return isValid;
   }
 
-  validateField(name) {
+  async validateField(name) {
     if (!this.fields[name]) return;
 
     const input = this.form.querySelector(`[name="${name}"]`);
@@ -189,8 +204,8 @@ export class AbstractArticleModal {
     const value = input.type === "file" ? input.files[0] : input.value;
     this.fields[name].value = value;
 
-    const error = this.fields[name].validator(value);
-    this.fields[name].error = typeof error === "string" ? error : "";
+    const result = await this.fields[name].validator(value);
+    this.fields[name].error = typeof result === "string" ? result : "";
 
     this.displayError(name);
   }

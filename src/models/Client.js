@@ -76,7 +76,6 @@ export class Client extends User {
         role: this.role,
       },
       client: {
-        id_utilisateur: this.id,
         has_account: this.has_account,
       },
     };

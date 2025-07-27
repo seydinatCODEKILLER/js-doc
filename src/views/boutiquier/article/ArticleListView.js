@@ -1,7 +1,9 @@
 import { FloatingActionButton } from "../../../components/button/FloatingButton.js";
 import { ArticleCard } from "../../../components/card/ArticleCard.js";
+import { Modal } from "../../../components/modal/Modal.js";
 import { ModernTable } from "../../../components/table/Table.js";
 import { AbstractView } from "../../AbstractView.js";
+import { ArticleEditModal } from "./articleEditModal.js";
 import { ArticleFormModal } from "./ArticleFormModal.js";
 
 export class ArticleView extends AbstractView {
@@ -135,7 +137,7 @@ export class ArticleView extends AbstractView {
         ],
       },
       onAction: (action, id, actionType) =>
-        this.controller.handleArticleAction(action, id, actionType),
+        this.handleArticleAction(action, id, actionType),
     });
 
     container.appendChild(cards.render());
@@ -204,7 +206,7 @@ export class ArticleView extends AbstractView {
         ],
       },
       onAction: (action, id, actionType) =>
-        this.controller.handleArticleAction(action, id, actionType),
+        this.handleArticleAction(action, id, actionType),
     });
     container.appendChild(table.render());
     table.update(this.localArticles, 1);
@@ -225,5 +227,76 @@ export class ArticleView extends AbstractView {
 
   getStatusButtonClass(item) {
     return item.deleted ? "btn-success" : "btn-error";
+  }
+
+  async handleArticleAction(action, id, actionType) {
+    const article = this.findArticleById(id);
+    if (!article) return;
+    try {
+      switch (action) {
+        case "edit":
+          await this.handleEditAction(article);
+          break;
+        case "toggleStatus":
+          await this.handleStatusToggle(id, actionType);
+          break;
+        default:
+          console.warn(`Action non gérée: ${action}`);
+      }
+    } catch (error) {
+      this.handleActionError(error);
+    }
+  }
+
+  findArticleById(id) {
+    return this.localArticles.find((b) => b.id == id);
+  }
+
+  async handleEditAction(article) {
+    const modal = new ArticleEditModal(this.app, article);
+    modal.open();
+  }
+
+  async handleStatusToggle(id, actionType) {
+    const isDeleteAction = actionType === "delete";
+    const confirmed = await this.showConfirmation(
+      isDeleteAction
+        ? "Voulez vous vraiment Désactiver cette article ?"
+        : "Voulez vous vraiment Restaurer cette article ?"
+    );
+
+    if (!confirmed) return;
+
+    await (isDeleteAction
+      ? this.controller.deleteArticle(id)
+      : this.controller.restoreArticle(id));
+
+    await this.refreshView();
+  }
+
+  handleActionError(error) {
+    console.error("Erreur lors de la gestion de l'action:", error);
+    this.app.services.notifications.show(
+      error.message || "Une erreur est survenue",
+      "error"
+    );
+  }
+
+  async refreshView() {
+    this.localArticles = await this.controller.loadArticles(true);
+    this.renderContent();
+  }
+
+  async showConfirmation(message) {
+    return new Promise((resolve) => {
+      Modal.confirm({
+        title: "Confirmation",
+        content: message,
+        confirmText: "Confirmer",
+        cancelText: "Annuler",
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
   }
 }

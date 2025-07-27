@@ -5,6 +5,7 @@ export class AbstractClientModal {
   constructor(app, config = {}) {
     this.app = app;
     this.controller = app.getController("boutiquier_client");
+    this.service = app.getService("boutiquier_client_services");
     this.config = config;
     this.init();
   }
@@ -126,7 +127,7 @@ export class AbstractClientModal {
     this.modal = new Modal({
       title: this.config.title || "client",
       content: this.form,
-      size: "xl",
+      size: "2xl",
       footerButtons: this.getFooterButtons(),
     });
   }
@@ -231,21 +232,49 @@ export class AbstractClientModal {
       email: {
         value: "",
         error: "",
-        validator: (v) => {
-          if (!this.form.querySelector('[name="has_account"]').checked)
-            return "";
-          return (
-            validators.required(v) ||
-            validators.email(v) ||
-            "Veuillez entrer un email valide"
+        validator: async (v) => {
+          const hasAccount = this.form.querySelector(
+            '[name="has_account"]'
+          ).checked;
+
+          if (!hasAccount) return "";
+
+          if (!validators.required(v)) return "L'email est requis";
+          if (!validators.email(v)) return "Format email invalide";
+
+          const currentEmail = this.config?.client?.email || null;
+          if (currentEmail && currentEmail.toLowerCase() === v.toLowerCase()) {
+            return true;
+          }
+
+          return await validators.isUnique(
+            v,
+            this.service.emailExists.bind(this.service),
+            "email"
           );
         },
       },
       telephone: {
         value: "",
         error: "",
-        validator: (v) =>
-          !v || validators.phone(v) || "Le téléphone doit contenir 9 chiffres",
+        validator: async (v) => {
+          if (!v) return true;
+          if (!validators.senegalPhone(v)) {
+            return "Téléphone invalide (ex: 77XXXXXXX)";
+          }
+
+          const formattedPhone = `+221${v}`;
+          const currentPhone = this.config?.client?.telephone || null;
+          if (formattedPhone === currentPhone) {
+            return true;
+          }
+
+          return await validators.isUnique(
+            formattedPhone,
+            this.service.phoneExists.bind(this.service),
+            "telephone"
+          );
+        },
       },
       password: {
         value: "",
@@ -282,7 +311,7 @@ export class AbstractClientModal {
   async handleSubmit(e) {
     e.preventDefault();
 
-    if (!this.validateForm()) return;
+    if (!await this.validateForm()) return;
     this.modal.setButtonLoading("submit", true, this.getLoadingText());
 
     try {
@@ -317,7 +346,6 @@ export class AbstractClientModal {
       telephone: formData.get("telephone")
         ? `+221${formData.get("telephone")}`
         : null,
-      id_boutiquier: this.app.store.state.user.id,
       password: hasAccount ? formData.get("password") : undefined,
       avatar: avatarUrl,
       has_account: hasAccount,
@@ -336,12 +364,12 @@ export class AbstractClientModal {
     );
   }
 
-  validateForm() {
+  async validateForm() {
     let isValid = true;
-    Object.keys(this.fields).forEach((field) => {
-      this.validateField(field);
+    for (const field of Object.keys(this.fields)) {
+      await this.validateField(field);
       if (this.fields[field].error) isValid = false;
-    });
+    }
     return isValid;
   }
 
@@ -356,7 +384,7 @@ export class AbstractClientModal {
     });
   }
 
-  validateField(name) {
+  async validateField(name) {
     if (!this.fields[name]) return;
 
     const input = this.form.querySelector(`[name="${name}"]`);
@@ -365,7 +393,7 @@ export class AbstractClientModal {
     const value = input.type === "file" ? input.files[0] : input.value;
     this.fields[name].value = value;
 
-    const error = this.fields[name].validator(value);
+    const error = await this.fields[name].validator(value);
     this.fields[name].error = typeof error === "string" ? error : "";
 
     this.displayError(name);
