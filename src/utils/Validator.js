@@ -24,4 +24,22 @@ export const validators = {
     if (!categories) return true;
     return categories.includes(value);
   },
+  senegalPhone: (value) => {
+    if (!value) return true;
+    return /^(77|78|70|76)[0-9]{7}$/.test(value);
+  },
+  isUnique: async (value, checkUniqueFn) => {
+    if (!value) return true;
+    return await checkUniqueFn(value);
+  },
+    isUnique: async (value, checkFn,field) => {
+    if (!value) return true;
+    try {
+      const exists = await checkFn(value);
+      return !exists || `Cette ${field} est déjà utilisée`;
+    } catch (error) {
+      console.error("Erreur lors de la vérification d’unicité :", error);
+      return "Erreur de vérification";
+    }
+  }
 };

@@ -14,9 +14,9 @@ export class UnauthorizedView extends AbstractView {
     const path = user ? this.rolePath(user.role) : "/login";
 
     container.innerHTML = `
-      <h1 class="text-4xl font-bold text-warning">Accès refusé</h1>
-      <p class="text-gray-600 text-sm">Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
-      <a href="${path}" class="btn btn-primary mt-4">
+      <h1 class="text-2xl font-bold text-warning">Accès refusé</h1>
+      <p class="text-gray-600 text-sm font-medium">Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
+      <a href="${path}" class="btn btn-primary">
         ${user ? "Retour à l'accueil" : "Se connecter"}
       </a>
     `;

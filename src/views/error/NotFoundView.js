@@ -15,8 +15,8 @@ export class NotFoundView extends AbstractView {
 
     container.innerHTML = `
       <h1 class="text-4xl font-bold text-error">404 - Page non trouvée</h1>
-      <p class="text-gray-600 text-sm">La page que vous recherchez n'existe pas ou a été déplacée.</p>
-      <a href="${path}" class="btn btn-primary mt-4">
+      <p class="text-gray-600 text-sm font-medium">La page que vous recherchez n'existe pas ou a été déplacée.</p>
+      <a href="${path}" class="btn btn-primary">
         ${user ? "Retour à l'accueil" : "Aller à la page de connexion"}
       </a>
     `;

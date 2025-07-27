@@ -1,11 +1,12 @@
 import { AbstractBoutiquierModal } from "./AbstractBoutiquierModal.js";
 
 export class BoutiquierFormModal extends AbstractBoutiquierModal {
-  constructor(app) {
+  constructor(app, existingBoutiquiers = []) {
     super(app, {
       title: "Ajouter un boutiquier",
       requirePassword: true,
     });
+    this.existingBoutiquiers = existingBoutiquiers;
   }
 
   getSubmitButtonText() {

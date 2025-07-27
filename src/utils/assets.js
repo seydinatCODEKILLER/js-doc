@@ -1,4 +1,4 @@
 export const IMAGES = {
-  background: "/assets/auth-bg.jpg",
-  error_illustration: "/assets/auth-bg.jpg",
+  background: "/assets/bg-connexion.jpg",
+  error_illustration: "/assets/404.jpg",
 };

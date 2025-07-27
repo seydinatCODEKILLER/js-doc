@@ -58,6 +58,7 @@ export class App {
     });
 
     this.services.cloudinary = new Cloudinary(this);
+    
     this.services.products = new ProductService({
       api: this.services.api,
       storage: this.services.storage,
@@ -78,6 +79,7 @@ export class App {
       storage: this.services.storage,
     });
 
+    
     this.services.client_produits = new ClientArticleService({
       api: this.services.api,
       storage: this.services.storage,
@@ -99,7 +101,8 @@ export class App {
       boutiquier_client: new BoutiquierClientController(this),
       boutiquier_dette: new BoutiquierDetteController(this),
       client_produit: new ProduitController(this),
-      client_dette: new ClientDetteController(this)
+      client_dette: new ClientDetteController(this),
+      boutiquier_dette: new BoutiquierDetteController(this)
     };
 
     this.router = new Router(this, {
@@ -111,6 +114,7 @@ export class App {
     this.router.addLayout("boutiquier", BoutiquierLayout)
     this.router.addLayout("error", ErrorLayout)
     this.router.addLayout("client", clientLayout)
+
     this.router.addRoutes(authRoutes);
     this.router.addRoutes(adminRoutes)
     this.router.addRoutes(clientRoutes)
