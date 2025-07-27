@@ -87,6 +87,17 @@
       "telephone": "+221776567898",
       "role": "boutiquier",
       "deleted": false
+    },
+    {
+      "id": "10",
+      "nom": "Diallo",
+      "prenom": "Sophie",
+      "email": "sophie020@221.com",
+      "password": "Liverpool040",
+      "avatar": "https://res.cloudinary.com/dvzo0zlpg/image/upload/v1753608708/d9wfzhq6wzdnmuucubxk.jpg",
+      "telephone": "+221778906573",
+      "role": "client",
+      "deleted": false
     }
   ],
   "client": [
@@ -104,6 +115,11 @@
       "id": "3",
       "id_utilisateur": "7",
       "has_account": false
+    },
+    {
+      "id": "4",
+      "has_account": true,
+      "id_utilisateur": "10"
     }
   ],
   "admin": [
@@ -149,27 +165,14 @@
     },
     {
       "id": "2",
-      "nom": "Huile végétale Arachide",
-      "prix": 25000,
+      "nom": "Coca Cola",
+      "prix": 3500,
       "quantite": 30,
       "seuil_alerte": 5,
-      "image": "https://cdn.pixabay.com/photo/2014/04/03/11/50/oil-312466_960_720.png",
-      "id_boutiquier": "1",
-      "article_id": "2",
-      "date_creation": "2023-11-22",
-      "deleted": true
-    },
-    {
-      "id": "3",
-      "nom": "Riz parfumé 50kg",
-      "prix": 28000,
-      "quantite": 80,
-      "seuil_alerte": 15,
-      "image": "https://cdn.pixabay.com/photo/2016/10/27/22/52/rice-1774673_960_720.jpg",
-      "id_boutiquier": "1",
-      "article_id": "3",
-      "date_creation": "2023-11-25",
-      "deleted": false
+      "image": "https://res.cloudinary.com/dvzo0zlpg/image/upload/v1753575741/yvmvee7mkunq1w0dyac9.jpg",
+      "id_boutiquier": "3",
+      "article_id": "5",
+      "date_creation": "2025-07-27",
     }
   ],
   "articles": [
@@ -204,6 +207,30 @@
       "id_boutiquier": "1",
       "date_publication": "2025-07-24",
       "deleted": false
+    },
+    {
+      "id": "5",
+      "titre": "Alimentation2",
+      "contenu": "l'ensemble des produits de qualite d'ordre superieur de notre espace",
+      "id_boutiquier": "3",
+      "date_publication": "2025-07-26",
+      "deleted": false
+    },
+    {
+      "id": "6",
+      "titre": "Electronic v2",
+      "contenu": "L'ensemble de vos appareil electronic sur mesures",
+      "id_boutiquier": "3",
+      "date_publication": "2025-07-26",
+      "deleted": false
+    },
+    {
+      "id": "7",
+      "titre": "Boissons",
+      "contenu": "Pour rafraichir a n'importe quel instant et n'importe quel moment",
+      "id_boutiquier": "3",
+      "date_publication": "2025-07-26",
+      "deleted": false
     }
   ],
   "dettes": [
@@ -214,34 +241,16 @@
       "montant": 15000,
       "statut": "accepted",
       "date_demande": "2023-11-20",
-      "date_traitement": "2025-07-25"
+      "date_traitement": "2025-07-27"
     },
     {
-      "id": 2,
-      "id_boutiquier": null,
-      "id_client": "1",
-      "montant": 35000,
-      "date_demande": "2025-07-27",
-      "date_traitement": null,
-      "statut": "accepted"
-    },
-    {
-      "id": 3,
-      "id_boutiquier": null,
-      "id_client": null,
-      "montant": 105000,
-      "date_demande": "2025-07-27",
-      "date_traitement": null,
-      "statut": "en_attente"
-    },
-    {
-      "id": 4,
-      "id_boutiquier": "1",
-      "id_client": null,
-      "montant": 25000,
-      "date_demande": "2025-07-27",
-      "date_traitement": null,
-      "statut": "en_attente"
+      "id": "2",
+      "id_client": "3",
+      "id_boutiquier": "3",
+      "montant": 15000,
+      "statut": "rejected",
+      "date_demande": "2024-11-20",
+      "date_traitement": "2025-07-27"
     }
   ],
   "boutiquier_client": [
@@ -252,16 +261,22 @@
       "date_association": "2023-11-20"
     },
     {
-      "id": "4",
-      "id_boutiquier": "1",
-      "id_client": "3",
-      "date_association": "2025-07-25"
-    },
-    {
       "id": "5",
       "id_boutiquier": "1",
       "id_client": "2",
       "date_association": "2025-07-25"
+    },
+    {
+      "id": "6",
+      "id_boutiquier": "3",
+      "id_client": "3",
+      "date_association": "2025-07-27"
+    },
+    {
+      "id": "7",
+      "id_boutiquier": "3",
+      "id_client": "4",
+      "date_association": "2025-07-27"
     }
   ]
 }

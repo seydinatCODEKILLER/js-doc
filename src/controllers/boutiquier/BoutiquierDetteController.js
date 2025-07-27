@@ -1,5 +1,3 @@
-import { Modal } from "../../components/modal/Modal.js";
-
 export class BoutiquierDetteController {
   constructor(app) {
     this.app = app;
@@ -51,81 +49,43 @@ export class BoutiquierDetteController {
     );
   }
 
-  async handleDetteAction(action, id) {
+  async rejectDette(id) {
     try {
-      switch (action) {
-        case "accept":
-          await this.#acceptDette(id);
-          break;
-        case "reject":
-          await this.#rejectDette(id);
-          break;
-        default:
-          console.warn("Action non gérée:", action);
-      }
-    } catch (error) {
-      console.error("Erreur action dette:", error);
+      await this.service.rejectDette(id);
+      this.cache.dettes = null;
+
       this.app.services.notifications.show(
-        error.message || "Erreur lors de l'action",
+        "dettes rejeter avec succès",
+        "success"
+      );
+
+      this.app.eventBus.publish("dettes:updated");
+    } catch (error) {
+      this.app.services.notifications.show(
+        error.message || "Erreur lors de la désactivation",
         "error"
       );
+      throw error;
     }
   }
 
-  async #rejectDette(id) {
-    const confirmed = await this.showDeleteConfirmation("refuser", "Refuser");
-    if (!confirmed) return;
+  async acceptDette(id) {
+    try {
+      await this.service.acceptDette(id);
+      this.cache.dettes = null;
 
-    await this.service.rejectDette(id);
-    this.cache.dettes = null;
+      this.app.services.notifications.show(
+        "dettes accepter avec succès",
+        "success"
+      );
 
-    this.app.services.notifications.show(
-      "dettes rejeter avec succès",
-      "success"
-    );
-
-    this.app.eventBus.publish("dettes:updated");
-  }
-  catch(error) {
-    this.app.services.notifications.show(
-      error.message || "Erreur lors de la désactivation",
-      "error"
-    );
-    throw error;
-  }
-
-  async showDeleteConfirmation(message, action) {
-    return new Promise((resolve) => {
-      Modal.confirm({
-        title: "Confirmer la votre action",
-        content: `Êtes-vous sûr de vouloir ${message} ce dette ?`,
-        confirmText: `${action}`,
-        cancelText: "Annuler",
-        onConfirm: () => resolve(true),
-        onCancel: () => resolve(false),
-      });
-    });
-  }
-
-  async #acceptDette(id) {
-    const confirmed = await this.showDeleteConfirmation("accepter", "Accepter");
-    if (!confirmed) return;
-
-    await this.service.acceptDette(id);
-    this.cache.dettes = null;
-
-    this.app.services.notifications.show(
-      "dettes accepter avec succès",
-      "success"
-    );
-
-    this.app.eventBus.publish("dettes:updated");
-  }
-  catch(error) {
-    this.app.services.notifications.show(
-      error.message || "Erreur lors de la désactivation",
-      "error"
-    );
-    throw error;
+      this.app.eventBus.publish("dettes:updated");
+    } catch (error) {
+      this.app.services.notifications.show(
+        error.message || "Erreur lors de la désactivation",
+        "error"
+      );
+      throw error;
+    }
   }
 }

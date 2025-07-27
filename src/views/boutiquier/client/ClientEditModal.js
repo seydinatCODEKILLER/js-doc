@@ -7,6 +7,7 @@ export class ClientEditModal extends AbstractClientModal {
       client,
     });
     this.client = client;
+    this.controller = app.getController("boutiquier_client");
   }
 
   initForm() {
@@ -52,16 +53,14 @@ export class ClientEditModal extends AbstractClientModal {
 
   async processFormData(formData) {
     try {
-        const updateData = {
-           id_client: this.client.id_client,
-          nom: formData.nom,
-          prenom: formData.prenom,
-          telephone: formData.telephone,
-          avatar: formData.avatar,
-          has_account: formData.has_account,
-          id_boutiquier: this.app.store.state.user.id,
-          has_account: formData.has_account
-        };
+      const updateData = {
+        id_client: this.client.id_client,
+        nom: formData.nom,
+        prenom: formData.prenom,
+        telephone: formData.telephone,
+        avatar: formData.avatar,
+        has_account: formData.has_account,
+      };
 
       if (formData.has_account) {
         updateData.email = formData.email;
@@ -73,7 +72,12 @@ export class ClientEditModal extends AbstractClientModal {
         updateData.password = "";
       }
 
-      await this.controller.updateClient(this.client.id, updateData);
+      const id_boutiquier = await this.controller.getBoutiquierId();
+      await this.controller.updateClient(
+        this.client.id,
+        updateData,
+        id_boutiquier
+      );
       this.app.eventBus.publish("client:updated");
     } catch (error) {
       throw error;

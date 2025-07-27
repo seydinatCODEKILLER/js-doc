@@ -36,15 +36,22 @@ export class ProductService extends AbstractService {
     }
   }
 
-  async createProduct(data) {
-    try {
-      const idProduit = await this.generateId("/produits");
+  async nameExists(name) {
+    const produits = await this.api.get("/produits");
+    return produits.some((u) => u.nom?.toLowerCase() === name.toLowerCase());
+  }
 
-      const product = new Product({ ...data, id: idProduit });
+  async createProduct(data,id) {
+    try {
+      if (await this.nameExists(data.nom)) {
+        throw new Error("ce produit avec ce titre existe déjà");
+      }
+      const idProduit = String(await this.generateId("/produits"));
+      const product = new Product({ ...data, id: idProduit, id_boutiquier: id });
       const productData = product.toJSON();
 
       const productResponse = await this.api.post("/produits", {
-        id: String(idProduit),
+        id: idProduit,
         ...productData,
       });
 

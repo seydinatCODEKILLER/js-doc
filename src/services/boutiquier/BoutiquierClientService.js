@@ -1,7 +1,6 @@
 import { AbstractService } from "../../app/core/AbstractService.js";
 import { Client } from "../../models/Client.js";
 
-
 export class BoutiquierClientService extends AbstractService {
   constructor({ api }) {
     super({ api });
@@ -44,8 +43,15 @@ export class BoutiquierClientService extends AbstractService {
     }
   }
 
-  async createClient(data) {
+  async createClient(data, id_boutiquier) {
     try {
+      if (await this.emailExists(data.email)) {
+        throw new Error("Cet email est déjà utilisé");
+      }
+
+      if (await this.phoneExists(data.telephone)) {
+        throw new Error("Ce numéro est déjà utilisé");
+      }
       const idUtilisateur = String(await this.generateId("/utilisateurs"));
       const idClient = String(await this.generateId("/client"));
 
@@ -56,22 +62,22 @@ export class BoutiquierClientService extends AbstractService {
       const { utilisateur, client: clientData } = client.toApiFormat();
       const [userResponse, clientResponse] = await Promise.all([
         this.api.post("/utilisateurs", {
-          id: String(idUtilisateur),
+          id: idUtilisateur,
           ...utilisateur,
         }),
         this.api.post("/client", {
-          id: String(idClient),
+          id: idClient,
           ...clientData,
           id_utilisateur: idUtilisateur,
         }),
       ]);
-      if (data.id_boutiquier) {
+      if (id_boutiquier) {
         const idBoutiquier_client = String(
           await this.generateId("/boutiquier_client")
         );
         await Client.addBoutiquier(
           idBoutiquier_client,
-          data.id_boutiquier,
+          id_boutiquier,
           idClient,
           this.api
         );
@@ -87,140 +93,61 @@ export class BoutiquierClientService extends AbstractService {
     }
   }
 
-  // async updateClient(id, data) {
-  //   try {
-  //     console.log("Données reçues pour mise à jour:", data);
-
-  //     // 1. Préparation des données de mise à jour
-  //     const updates = {
-  //       utilisateur: {
-  //         nom: data.nom,
-  //         prenom: data.prenom,
-  //         telephone: data.telephone,
-  //         avatar: data.avatar,
-  //         email: data.has_account ? data.email : "",
-  //         password:
-  //           data.has_account && data.password ? data.password : "",
-  //           role: data.role
-  //       },
-  //       client: {
-  //         id_utilisateur: id,
-  //         has_account: data.has_account,
-  //       },
-  //     };
-
-  //     // 2. Mise à jour des entités en parallèle
-  //     const [userResponse, clientResponse] = await Promise.all([
-  //       this.api.patch(`/utilisateurs/${id}`, updates.utilisateur),
-  //       this.api.patch(`/client/${data.id_client}`, updates.client),
-  //     ]);
-
-  //     // 3. Gestion des associations boutiquiers
-  //     if (data.id_boutiquier) {
-  //       // Suppression des anciennes associations
-  //       const currentAssociations = await this.api.get(
-  //         `/boutiquier_client?id_client=${data.id_client}`
-  //       );
-
-  //       await Promise.all(
-  //         currentAssociations.map((assoc) =>
-  //           Client.removeBoutiquier(
-  //             data.id_client,
-  //             assoc.id_boutiquier,
-  //             this.api
-  //           )
-  //         )
-  //       );
-
-  //       // Création de la nouvelle association
-  //       const idBoutiquierClient = String(
-  //         await this.generateId("/boutiquier_client")
-  //       );
-  //       await Client.addBoutiquier(
-  //         idBoutiquierClient,
-  //         data.id_boutiquier,
-  //         data.id_client,
-  //         this.api
-  //       );
-  //     }
-
-  //     console.log("Mise à jour réussie");
-  //      return {
-  //        success: true,
-  //        utilisateur: userResponse,
-  //        client: clientResponse,
-  //      };
-  //   } catch (error) {
-  //     console.error("Échec de la mise à jour:", error);
-  //     throw new Error(`Échec de la mise à jour: ${error.message}`);
-  //   }
-  // }
-
-  async updateClient(id, data) {
+  async updateClient(id, data, id_boutiquier) {
     try {
-
-
       const updatePayload = {
-        utilisateur: {},
-        client: {},
+        utilisateur: {
+          nom: data.nom,
+          prenom: data.prenom,
+          telephone: data.telephone,
+          avatar: data.avatar,
+        },
+        client: {
+          has_account: data.has_account,
+        },
       };
 
-      // Données utilisateur
-      updatePayload.utilisateur = {
-        nom: data.nom,
-        prenom: data.prenom,
-        telephone: data.telephone,
-        avatar: data.avatar,
-        role: "client",
-      };
-
-      // Gestion spécifique du compte
       if (data.has_account) {
-        updatePayload.utilisateur.email = data.email ;
-        if (data.password) {
-          updatePayload.utilisateur.password = data.password; // À hasher côté serveur
+        updatePayload.utilisateur.email = data.email;
+        if (data.password?.trim()) {
+          updatePayload.utilisateur.password = data.password;
         }
       } else {
         updatePayload.utilisateur.email = "";
         updatePayload.utilisateur.password = "";
       }
 
-      updatePayload.client = {
-        has_account: data.has_account,
-      };
-
       const [userResponse, clientResponse] = await Promise.all([
-        this.api.patch(
-          `/utilisateurs/${id}`,
-          updatePayload.utilisateur
-        ),
+        this.api.patch(`/utilisateurs/${id}`, updatePayload.utilisateur),
         this.api.patch(`/client/${data.id_client}`, updatePayload.client),
       ]);
 
-      if (
-        data.id_boutiquier 
-      ) {
+      if (id_boutiquier) {
         const existingAssociations = await this.api.get(
-          `/boutiquier_client?id_client=${data.id_client}`
+          `/boutiquier_client?id_boutiquier=${id_boutiquier}`
         );
 
         await Promise.all(
-          existingAssociations.map((assoc) =>
-            this.api.delete(`/boutiquier_client/${assoc.id}`)
-          )
+          existingAssociations
+            .filter((a) => a.id_client == data.id_client)
+            .map((assoc) => this.api.delete(`/boutiquier_client/${assoc.id}`))
         );
-        const idBoutiquierClient = String(await this.generateId("/boutiquier_client"));
+
+        const idBoutiquierClient = String(
+          await this.generateId("/boutiquier_client")
+        );
+
         await this.api.post("/boutiquier_client", {
           id: idBoutiquierClient,
-          id_boutiquier: data.id_boutiquier,
-          id_client: data.id_client, 
-          date_association: new Date().toISOString().split("T")[0]})
+          id_boutiquier,
+          id_client: data.id_client,
+          date_association: new Date().toISOString().split("T")[0],
+        });
       }
 
-
       return {
-        ...userResponse,
-        ...clientResponse,
+        utilisateur: userResponse,
+        client: clientResponse,
       };
     } catch (error) {
       console.error("Erreur dans updateClient:", error);
@@ -247,5 +174,16 @@ export class BoutiquierClientService extends AbstractService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async emailExists(email) {
+    const users = await this.api.get("/utilisateurs");
+    return users.some((u) => u.email?.toLowerCase() === email.toLowerCase());
+  }
+
+  async phoneExists(telephone) {
+    if (!telephone) return false;
+    const users = await this.api.get("/utilisateurs");
+    return users.some((u) => u.telephone === telephone);
   }
 }
