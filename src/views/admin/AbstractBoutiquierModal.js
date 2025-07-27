@@ -268,9 +268,12 @@ export class AbstractBoutiquierModal {
   async getFormData() {
     const formData = new FormData(this.form);
     const file = this.form.querySelector('[name="avatar"]').files[0];
-    const avatarBase64 = file
-      ? await this.convertToBase64(file)
-      : this.config.boutiquier?.avatar || null;
+    let avatarUrl = this.config.boutiquier?.avatar || null;
+    if (file) {
+      const cloudinaryService = this.app.getService("cloudinary");
+      const uploadResult = await cloudinaryService.uploadImage(file);
+      avatarUrl = uploadResult?.url || null;
+    }
     return {
       nom: formData.get("nom"),
       prenom: formData.get("prenom"),
@@ -279,7 +282,7 @@ export class AbstractBoutiquierModal {
         ? `+221${formData.get("telephone")}`
         : null,
       password: formData.get("password"),
-      avatar: avatarBase64,
+      avatar: avatarUrl,
       role: "boutiquier",
     };
   }

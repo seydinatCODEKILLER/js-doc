@@ -49,7 +49,7 @@ export class clientLayout {
         {
           text: "Mes Detttes",
           icon: "ri-user-3-line",
-          path: "/client/dettes",
+          path: "/client/dette",
         },
       ],
       onNavigate: (path) => this.app.router.navigateTo(path),
