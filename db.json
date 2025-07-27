@@ -146,6 +146,30 @@
       "article_id": "1",
       "date_creation": "2023-11-20",
       "deleted": false
+    },
+    {
+      "id": "2",
+      "nom": "Huile végétale Arachide",
+      "prix": 25000,
+      "quantite": 30,
+      "seuil_alerte": 5,
+      "image": "https://cdn.pixabay.com/photo/2014/04/03/11/50/oil-312466_960_720.png",
+      "id_boutiquier": "1",
+      "article_id": "2",
+      "date_creation": "2023-11-22",
+      "deleted": true
+    },
+    {
+      "id": "3",
+      "nom": "Riz parfumé 50kg",
+      "prix": 28000,
+      "quantite": 80,
+      "seuil_alerte": 15,
+      "image": "https://cdn.pixabay.com/photo/2016/10/27/22/52/rice-1774673_960_720.jpg",
+      "id_boutiquier": "1",
+      "article_id": "3",
+      "date_creation": "2023-11-25",
+      "deleted": false
     }
   ],
   "articles": [
@@ -191,6 +215,33 @@
       "statut": "accepted",
       "date_demande": "2023-11-20",
       "date_traitement": "2025-07-25"
+    },
+    {
+      "id": 2,
+      "id_boutiquier": null,
+      "id_client": "1",
+      "montant": 35000,
+      "date_demande": "2025-07-27",
+      "date_traitement": null,
+      "statut": "accepted"
+    },
+    {
+      "id": 3,
+      "id_boutiquier": null,
+      "id_client": null,
+      "montant": 105000,
+      "date_demande": "2025-07-27",
+      "date_traitement": null,
+      "statut": "en_attente"
+    },
+    {
+      "id": 4,
+      "id_boutiquier": "1",
+      "id_client": null,
+      "montant": 25000,
+      "date_demande": "2025-07-27",
+      "date_traitement": null,
+      "statut": "en_attente"
     }
   ],
   "boutiquier_client": [

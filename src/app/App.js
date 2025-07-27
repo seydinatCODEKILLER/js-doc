@@ -30,6 +30,8 @@ import { ClientArticleService } from "../services/client/ClientArticleService.js
 import { ProduitController } from "../controllers/client/ProduitController.js";
 import { clientRoutes } from "../routes/client.routes.js";
 import { clientLayout } from "../layout/ClientLayout.js";
+import { ClientDetteController } from "../controllers/client/ClientDetteController.js";
+import { ClientDetteService } from "../services/client/ClientDetteService.js";
 
 export class App {
   constructor(config) {
@@ -76,11 +78,18 @@ export class App {
       api: this.services.api,
       storage: this.services.storage,
     });
+
     
     this.services.client_produits = new ClientArticleService({
       api: this.services.api,
       storage: this.services.storage,
     });
+
+    this.services.client_dette_services = new ClientDetteService({
+      api: this.services.api,
+      storage: this.services.storage,
+    });
+
 
     //les controllers de l'applications
 
@@ -92,6 +101,7 @@ export class App {
       boutiquier_client: new BoutiquierClientController(this),
       boutiquier_dette: new BoutiquierDetteController(this),
       client_produit: new ProduitController(this),
+      client_dette: new ClientDetteController(this),
       boutiquier_dette: new BoutiquierDetteController(this)
     };
 
@@ -109,6 +119,7 @@ export class App {
     this.router.addRoutes(adminRoutes)
     this.router.addRoutes(clientRoutes)
     this.router.addRoutes(boutiquierRoutes)
+    this.router.addRoutes(errorRoutes)
     this.router.addRoutes(errorRoutes)
 
     this.initModules();
