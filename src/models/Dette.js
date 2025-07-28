@@ -4,14 +4,10 @@ export class Dette {
     this.id_boutiquier = data.id_boutiquier || null;
     this.id_client = data.id_client || null;
     this.montant = Number(data.montant) || 0;
-    // Fixée automatiquement à la création
     this.date_demande = new Date().toISOString().split("T")[0];
-
-    // Ne doit pas être remplie tant que la dette n'est pas traitée
     this.date_traitement = data.date_traitement || null;
-
-    // Par défaut en attente
     this.statut = data.statut || "en_attente";
+    this.items = data.items || [];
   }
 
   generateId() {
@@ -30,7 +26,21 @@ export class Dette {
       montant: this.montant,
       date_demande: this.date_demande,
       date_traitement: this.date_traitement,
-      statut: this.statut
+      statut: this.statut,
+      items: this.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        subtotal: item.subtotal,
+      })),
     };
+  }
+
+  calculateTotal() {
+    this.montant = this.items.reduce(
+      (sum, item) => sum + (item.subtotal || 0),
+      0
+    );
+    return this.montant;
   }
 }

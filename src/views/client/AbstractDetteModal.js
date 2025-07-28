@@ -1,5 +1,4 @@
 import { Modal } from "../../components/modal/Modal.js";
-import { validators } from "../../utils/Validator.js";
 
 export class AbstractDetteModal {
   constructor(app, config = {}) {
@@ -7,6 +6,8 @@ export class AbstractDetteModal {
     this.controller = app.getController("client_dette");
     this.produitController = app.getController("client_produit");
     this.config = config;
+    this.selectedProduits = [];
+    this.produits = [];
     this.init();
   }
 
@@ -15,34 +16,48 @@ export class AbstractDetteModal {
     this.setupModal();
     this.setupValidation();
     this.setupEvents();
-    this.initForm();
+    this.loadProduits();
   }
 
   createForm() {
     this.form = document.createElement("form");
-    this.form.className = "space-y-4";
+    this.form.className = "space-y-4 p-4";
     this.form.noValidate = true;
     this.form.innerHTML = this.getFormTemplate();
   }
 
   getFormTemplate() {
     return `
-      <div class="bg-white text-gray-700 rounded-lg p-4 shadow-md max-w-2xl mx-auto">
-        <h2 class="text-xl font-semibold mb-4">Nouvelle demande de dette</h2>
-        
-        <input type="text" id="searchProduit" placeholder="Rechercher un produit..." 
-               class="w-full border p-2 rounded mb-3" />
-
-        <ul id="produitSuggestions" class="border rounded mb-4 max-h-40 overflow-y-auto"></ul>
-
-        <div id="selectedProduitsList" class="space-y-2 mb-4"></div>
-
-        <div class="flex justify-between items-center font-bold">
-          <span>Total :</span>
-          <span id="montantTotal">0 FCFA</span>
-        </div>
+    <h2 class="text-xl font-semibold mb-4">${
+      this.config.title || "Nouvelle demande de dette"
+    }</h2>
+    
+    <!-- Recherche de produits -->
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">Rechercher un produit</span>
+      </label>
+      <div class="relative">
+        <input type="text" id="searchProduit" placeholder="Nom du produit..." 
+               class="input input-bordered w-full" />
+        <div id="produitSuggestions" class="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-lg hidden max-h-60 overflow-y-auto"></div>
       </div>
-    `;
+    </div>
+
+    <!-- Liste des produits sélectionnés -->
+    <div class="mt-4">
+      <h4 class="font-medium mb-2">Articles sélectionnés</h4>
+      <div id="selectedProduitsList" class="space-y-3"></div>
+    </div>
+
+    <!-- Total -->
+    <div class="bg-base-200 p-4 rounded-lg mt-4">
+      <div class="flex justify-between items-center font-bold text-lg">
+        <span>Total :</span>
+        <span id="montantTotal">0 FCFA</span>
+      </div>
+    </div>
+  `;
   }
 
   setupModal() {
@@ -68,156 +83,126 @@ export class AbstractDetteModal {
     });
   }
 
-  getSubmitButtonText() {
-    return "Soumettre";
+  async loadProduits() {
+    try {
+      this.produits = await this.produitController.loadProduits();
+    } catch (error) {
+      this.app.services.notifications.show(
+        "Erreur lors du chargement des produits",
+        "error"
+      );
+      console.error("Erreur loadProduits:", error);
+    }
   }
 
   setupValidation() {
     this.fields = {
-      id_client: {
-        value: "",
+      produits: {
+        value: [],
         error: "",
-        validator: (v) => validators.required(v) || "Client requis",
-      },
-      id_boutiquier: {
-        value: "",
-        error: "",
-        validator: (v) => validators.required(v) || "Boutiquier requis",
-      },
-      montant: {
-        value: "",
-        error: "",
-        validator: (v) =>
-          (validators.required(v) && v > 0) || "Montant invalide",
+        validator: (v) => v.length > 0 || "Ajoutez au moins un produit",
       },
     };
   }
 
   setupEvents() {
-    // this.form.addEventListener("submit", (e) => this.handleSubmit(e));
-    // Object.keys(this.fields).forEach((name) => {
-    //   const input = this.form.querySelector(`[name="${name}"]`);
-    //   input.addEventListener("input", () => {
-    //     if (this.fields[name].error) {
-    //       this.clearError(name);
-    //     }
-    //   });
-    // });
-    // super.setupEvents();
-
     const searchInput = this.form.querySelector("#searchProduit");
     const suggestionList = this.form.querySelector("#produitSuggestions");
 
-    searchInput.addEventListener("input", () => {
-      const term = searchInput.value.trim().toLowerCase();
-      suggestionList.innerHTML = "";
-      if (!term) return;
-
-      const filtered = this.produits.filter(
-        (p) =>
-          p.nom.toLowerCase().includes(term) &&
-          !this.selectedProduits.find((sp) => sp.id === p.id)
-      );
-
-      for (const produit of filtered) {
-        const li = document.createElement("li");
-        li.textContent = produit.nom;
-        li.className = "cursor-pointer p-2 hover:bg-gray-200";
-        li.addEventListener("click", () => {
-          this.addProduit(produit);
-          searchInput.value = "";
-          suggestionList.innerHTML = "";
-        });
-        suggestionList.appendChild(li);
+    searchInput.addEventListener("input", () =>
+      this.handleSearch(searchInput, suggestionList)
+    );
+    searchInput.addEventListener("focus", () =>
+      suggestionList.classList.remove("hidden")
+    );
+    document.addEventListener("click", (e) => {
+      if (!suggestionList.contains(e.target) && e.target !== searchInput) {
+        suggestionList.classList.add("hidden");
       }
     });
+
+    this.setupProduitListeners();
   }
 
-  addProduit(produit) {
-    produit.quantiteDemandee = 1;
-    this.selectedProduits.push(produit);
-    this.renderSelectedProduits();
-  }
+  handleSearch(searchInput, suggestionList) {
+    const term = searchInput.value.trim().toLowerCase();
+    suggestionList.innerHTML = "";
 
-  validateForm() {
-    let isValid = true;
-    Object.keys(this.fields).forEach((field) => {
-      const input = this.form.querySelector(`[name="${field}"]`);
-      const value = input.value;
-      const error = this.fields[field].validator(value);
-      this.fields[field].value = value;
-      this.fields[field].error = typeof error === "string" ? error : "";
-      const errorEl = this.form.querySelector(`[data-error="${field}"]`);
-      errorEl.textContent = this.fields[field].error;
-      errorEl.classList.toggle("hidden", !this.fields[field].error);
-      input.classList.toggle("input-error", !!this.fields[field].error);
-      if (this.fields[field].error) isValid = false;
-    });
-    return isValid;
-  }
-
-  // async handleSubmit(e) {
-  //   e.preventDefault();
-  //   if (!this.validateForm()) return;
-  //   this.modal.setButtonLoading("submit", true);
-  //   try {
-  //     const data = {
-  //       id_client: this.fields.id_client.value,
-  //       id_boutiquier: this.fields.id_boutiquier.value,
-  //       montant: Number(this.fields.montant.value),
-  //       date_demande: new Date().toISOString().split("T")[0],
-  //       statut: "en_attente",
-  //     };
-  //     await this.processFormData(data);
-  //     this.close();
-  //   } catch (error) {
-  //     this.app.services.notifications.show(error.message || "Erreur lors de l'envoi", "error");
-  //   } finally {
-  //     this.modal.setButtonLoading("submit", false);
-  //   }
-  // }
-
-  async handleSubmit(e) {
-    e.preventDefault();
-   
-
-    if (this.selectedProduits.length === 0) {
-      this.app.services.notifications.show(
-        "Veuillez ajouter au moins un produit",
-        "error"
-      );
+    if (term.length < 2) {
+      suggestionList.classList.add("hidden");
       return;
     }
 
-    this.modal.setButtonLoading("submit", true, "Envoi en cours...");
+    const filtered = this.produits.filter(
+      (p) =>
+        p.nom.toLowerCase().includes(term) &&
+        !this.selectedProduits.some((sp) => sp.id === p.id) &&
+        p.quantite > 0
+    );
 
-    try {
-      const dette = {
-        date_demande: new Date().toISOString().split("T")[0],
-        statut: "en_attente",
-        produits: this.selectedProduits.map((p) => ({
-          id: p.id,
-          nom: p.nom,
-          prix: p.prix,
-          quantite: p.quantiteDemandee,
-          sousTotal: p.prix * p.quantiteDemandee,
-        })),
-        montant: this.getMontantTotal(),
-      };
-      
-      
-      if (this.config.onSubmit) {
-        await this.config.onSubmit(dette);
-      }
-
-      this.processFormData(dette);
-
-      this.close();
-    } catch (error) {
-      this.handleSubmitError(error);
-    } finally {
-      this.modal.setButtonLoading("submit", false);
+    if (filtered.length === 0) {
+      suggestionList.innerHTML =
+        '<div class="p-2 text-gray-500">Aucun produit trouvé</div>';
+    } else {
+      filtered.forEach((produit) => {
+        const item = document.createElement("div");
+        item.className =
+          "p-2 hover:bg-base-200 cursor-pointer flex justify-between";
+        item.innerHTML = `
+          <span>${produit.nom}</span>
+          <span class="text-primary">${produit.prix} FCFA (${produit.quantite} dispo)</span>
+        `;
+        item.addEventListener("click", () => {
+          this.addProduit(produit);
+          searchInput.value = "";
+          suggestionList.classList.add("hidden");
+        });
+        suggestionList.appendChild(item);
+      });
     }
+
+    suggestionList.classList.remove("hidden");
+  }
+
+  addProduit(produit) {
+    const existing = this.selectedProduits.find((p) => p.id === produit.id);
+
+    if (existing) {
+      if (existing.quantiteDemandee < produit.quantite) {
+        existing.quantiteDemandee += 1;
+      }
+    } else {
+      this.selectedProduits.push({
+        ...produit,
+        quantiteDemandee: 1,
+        sousTotal: produit.prix,
+      });
+    }
+
+    this.renderSelectedProduits();
+    this.fields.produits.value = this.selectedProduits;
+    this.validateForm();
+  }
+
+  setupProduitListeners() {
+    const listContainer = this.form.querySelector("#selectedProduitsList");
+
+    listContainer.addEventListener("input", (e) => {
+      const input = e.target;
+      if (input.matches('input[type="number"][data-id]')) {
+        const id = parseInt(input.getAttribute("data-id"));
+        const value = parseInt(input.value) || 1;
+        this.updateProduitQuantity(id, value);
+      }
+    });
+
+    listContainer.addEventListener("click", (e) => {
+      const button = e.target.closest('[data-action="remove"]');
+      if (!button) return;
+
+      const id = parseInt(button.getAttribute("data-id"));
+      this.handleProduitAction("remove", id);
+    });
   }
 
   renderSelectedProduits() {
@@ -225,31 +210,35 @@ export class AbstractDetteModal {
     const totalSpan = this.form.querySelector("#montantTotal");
 
     listContainer.innerHTML = "";
-
     for (const produit of this.selectedProduits) {
       const div = document.createElement("div");
       div.className = "flex items-center gap-2";
-
+      const total = produit.prix * produit.quantiteDemandee;
       div.innerHTML = `
-        <span class="flex-1">${produit.nom}</span>
-        <input type="number" min="1" max="${produit.quantite}" 
-               value="${produit.quantiteDemandee}" 
-               class="w-20 border p-1 rounded" />
-        <span class="w-24 text-right">${
-          produit.prix * produit.quantiteDemandee
-        } FCFA</span>
-        <button class="text-red-500 font-bold">X</button>
-      `;
+      <span class="flex-1">${produit.nom}</span>
+      <input type="number" min="1" max="${produit.quantite}" 
+             value="${produit.quantiteDemandee}" 
+             class="w-20 border p-1 rounded" />
+      <span class="w-24 text-right">${total} FCFA</span>
+      <button class="text-red-500 font-bold cursor-pointer"><i class="ri-delete-bin-6-fill"></i></button>
+    `;
 
       const input = div.querySelector("input");
       const btn = div.querySelector("button");
 
       input.addEventListener("input", (e) => {
         let val = parseInt(e.target.value);
+        if (isNaN(val)) val = 1;
         if (val > produit.quantite) val = produit.quantite;
         if (val < 1) val = 1;
-        produit.quantiteDemandee = val;
-        this.renderSelectedProduits();
+
+        if (produit.quantiteDemandee !== val) {
+          produit.quantiteDemandee = val;
+          div.querySelector("span.w-24").textContent = `${
+            produit.prix * val
+          } FCFA`;
+          totalSpan.textContent = `${this.getMontantTotal()} FCFA`;
+        }
       });
 
       btn.addEventListener("click", () => {
@@ -265,40 +254,135 @@ export class AbstractDetteModal {
     totalSpan.textContent = `${this.getMontantTotal()} FCFA`;
   }
 
+  handleProduitAction(action, id) {
+    if (action === "remove") {
+      this.selectedProduits = this.selectedProduits.filter((p) => p.id !== id);
+      this.renderSelectedProduits();
+      this.validateForm();
+    }
+  }
+
+  updateProduitQuantity(id, quantity) {
+    const produit = this.selectedProduits.find((p) => p.id === id);
+    if (produit) {
+      produit.quantiteDemandee = Math.max(
+        1,
+        Math.min(quantity, produit.quantite)
+      );
+
+      this.updateDisplayedValues();
+      this.validateForm();
+    }
+  }
+
+  updateDisplayedValues() {
+    const totalSpan = this.form.querySelector("#montantTotal");
+
+    this.selectedProduits.forEach((produit) => {
+      const itemElement = this.form
+        .querySelector(`[data-id="${produit.id}"]`)
+        .closest("div.flex");
+      if (itemElement) {
+        const subtotalElement = itemElement.querySelector("div.text-right");
+        if (subtotalElement) {
+          subtotalElement.textContent = `${
+            produit.prix * produit.quantiteDemandee
+          } FCFA`;
+        }
+      }
+    });
+
+    totalSpan.textContent = `${this.getMontantTotal()} FCFA`;
+  }
+
+  validateQuantities() {
+    this.selectedProduits.forEach((produit) => {
+      if (produit.quantiteDemandee > produit.quantite) {
+        produit.quantiteDemandee = produit.quantite;
+      } else if (produit.quantiteDemandee < 1) {
+        produit.quantiteDemandee = 1;
+      }
+    });
+    this.renderSelectedProduits();
+  }
+
+  validateForm() {
+    this.fields.produits.value = this.selectedProduits;
+    const isValid = this.selectedProduits.length > 0;
+
+    const submitBtn = this.form.querySelector('[action="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = !isValid;
+    }
+
+    return isValid;
+  }
+
   getMontantTotal() {
     return this.selectedProduits.reduce(
-      (sum, p) => sum + p.prix * p.quantiteDemandee,
+      (total, p) => total + p.prix * p.quantiteDemandee,
       0
     );
   }
 
-  async processFormData(data) {
-    throw new Error("processFormData() doit être implémenté.");
+  async handleSubmit(e) {
+    e.preventDefault();
+
+    if (!this.validateForm()) {
+      this.app.services.notifications.show(
+        "Veuillez ajouter au moins un produit",
+        "error"
+      );
+      return;
+    }
+
+    this.modal.setButtonLoading("submit", true, "Envoi en cours...");
+
+    try {
+      const detteData = {
+        produits: this.selectedProduits.map((p) => ({
+          id: p.id,
+          nom: p.nom,
+          prix: p.prix,
+          quantite: p.quantiteDemandee,
+          sousTotal: p.prix * p.quantiteDemandee,
+        })),
+        montant: this.getMontantTotal(),
+      };
+
+      await this.processFormData(detteData);
+      this.close();
+    } catch (error) {
+      this.handleSubmitError(error);
+    } finally {
+      this.modal.setButtonLoading("submit", false);
+    }
+  }
+
+  handleSubmitError(error) {
+    console.error("Erreur lors de la soumission:", error);
+    this.app.services.notifications.show(
+      error.message || "Erreur lors de l'envoi de la demande",
+      "error"
+    );
   }
 
   open() {
+    this.selectedProduits = [];
     this.form.reset();
     this.modal.open();
+    this.renderSelectedProduits();
   }
 
   close() {
     this.modal.close();
   }
 
-  clearError(name) {
-    const errorEl = this.form.querySelector(`[data-error="${name}"]`);
-    const input = this.form.querySelector(`[name="${name}"]`);
-    errorEl.textContent = "";
-    errorEl.classList.add("hidden");
-    input.classList.remove("input-error");
+  getSubmitButtonText() {
+    return "Soumettre la demande";
   }
 
-  initForm() {
-    this.selectedProduits = [];
-
-    // Exemple : tu récupères tous les produits depuis le controller
-    this.produitController.loadProduits().then((produits) => {
-      this.produits = produits;
-    });
+  async processFormData(data) {
+    throw new Error("La méthode processFormData doit être implémentée");
   }
 }
