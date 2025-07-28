@@ -9,31 +9,33 @@ export class ClientDetteService extends AbstractService {
   }
 
   async getDetteByClient(clientId) {
-    return this.api.get(`${this.endpoint}?id_client=${clientId}&statut=accepted`);
+    return this.api.get(`${this.endpoint}?id_client=${clientId}`);
   }
 
   async createDette(data) {
+    try {
+      const idDette = String(await this.generateId(`${this.endpoint}`));
+      const dette = new Dette({...data, id: idDette});
 
-  try {
-    const idDette = await this.generateId(`${this.endpoint}`);
+      const detteResponse = await this.api.post(`${this.endpoint}`, {
+        id: idDette,
+        ...dette.toJSON(),
+      });
 
-    const dette = new Dette({ ...data, id: idDette });
-        console.log("dette",dette);
-        
-        const detteData = dette.toJSON();
-        console.log("detteData",detteData);
-
-    const detteResponse = await this.api.post(`${this.endpoint}`, {
-      id: String(idDette),
-      ...detteData,
-    });
-    console.log("detteReponse",detteResponse);
-    
-
-    return detteResponse;
-  } catch (error) {
-    throw error;
+      return detteResponse;
+    } catch (error) {
+      throw error;
+    }
   }
-}
 
+  async getBoutiquierByClientId(clientId) {
+    const response = await this.api.get(
+      `/boutiquier_client?id_client=${clientId}`
+    );
+    const association = response[0];
+    if (!association) {
+      throw new Error("Aucun boutiquier associé à ce client.");
+    }
+    return association.id_boutiquier;
+  }
 }
