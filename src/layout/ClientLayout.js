@@ -21,6 +21,7 @@ export class clientLayout {
 
     const header = new ResponsiveHeader({
       currentPage: "Client",
+      subtitle: "Bienvenue dans votre espace client",
       userName: this.app.store.state.user?.prenom || "Client",
       onMenuClick: () => this.toggleSidebar(),
       onThemeChange: () => this.toggleTheme(),
