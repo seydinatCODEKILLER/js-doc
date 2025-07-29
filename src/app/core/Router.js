@@ -16,7 +16,7 @@ class Router {
       mode: "history",
       scrollRestoration: "manual",
       defaultLayout: "default",
-      cacheSize: 10, // Nombre max de vues en cache
+      cacheSize: 0, // Nombre max de vues en cache
       strict: false, // Respect de la casse et slash final
       sensitive: false, // Sensibilité à la casse
       ...config,
