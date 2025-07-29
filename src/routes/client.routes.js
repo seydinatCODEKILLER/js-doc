@@ -1,4 +1,5 @@
 import { AuthGuard } from "../app/core/guard/AuthGuard.js";
+import { ClientActifGuard } from "../app/core/guard/ClientActifGuard.js";
 import { ClientGuard } from "../app/core/guard/RoleGuard.js";
 import { ClientArticleView } from "../views/client/ClientArticleView.js";
 import { ClientDetteView } from "../views/client/ClientDetteView.js";
@@ -13,7 +14,7 @@ export const clientRoutes = [
       requiredRole: "client",
       title: "Gestion des produits",
     },
-    guards: [AuthGuard, ClientGuard],
+    guards: [AuthGuard, ClientGuard, ClientActifGuard],
   },
   {
     path: "/client/dette",
@@ -24,6 +25,6 @@ export const clientRoutes = [
       requiredRole: "client",
       title: "Mes dettes",
     },
-    guards: [AuthGuard, ClientGuard],
+    guards: [AuthGuard, ClientGuard, ClientActifGuard],
   },
 ];
