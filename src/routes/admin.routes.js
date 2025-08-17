@@ -23,6 +23,7 @@ export const adminRoutes = [
       requiresAuth: true,
       requiredRole: "admin",
       title: "Gestion des boutiquiers",
+      // noCache: true,
     },
     guards: [AuthGuard, AdminGuard],
   },

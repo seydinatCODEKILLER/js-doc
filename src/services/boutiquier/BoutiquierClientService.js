@@ -45,9 +45,9 @@ export class BoutiquierClientService extends AbstractService {
 
   async createClient(data, id_boutiquier) {
     try {
-      if (await this.emailExists(data.email)) {
-        throw new Error("Cet email est déjà utilisé");
-      }
+      // if (await this.emailExists(data.email)) {
+      //   throw new Error("Cet email est déjà utilisé");
+      // }
 
       if (await this.phoneExists(data.telephone)) {
         throw new Error("Ce numéro est déjà utilisé");

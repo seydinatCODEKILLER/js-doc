@@ -9,7 +9,7 @@
       "avatar": "https://pikaso.cdnpk.net/public/production/prompt-templates/211.png?preview=1",
       "role": "boutiquier",
       "telephone": "+221772873454",
-      "deleted": false
+      "deleted": true
     },
     {
       "id": "2",
@@ -46,11 +46,11 @@
     },
     {
       "id": "5",
-      "nom": "Thiam2",
+      "nom": "Thiam",
       "prenom": "Morales",
-      "email": "rp@ecole221.com",
+      "email": "morales03@gmail.com",
       "password": "Liverpool",
-      "avatar": "https://res.cloudinary.com/dvzo0zlpg/image/upload/v1753435424/xqatw0gylqhdwj4qyjaw.jpg",
+      "avatar": "https://res.cloudinary.com/dvzo0zlpg/image/upload/v1753796352/cx6ugag1hfstyvbn7kbi.png",
       "telephone": "+221778906578",
       "role": "boutiquier",
       "deleted": false
@@ -98,6 +98,17 @@
       "telephone": "+221778906573",
       "role": "client",
       "deleted": false
+    },
+    {
+      "id": "11",
+      "nom": "compte",
+      "prenom": "sans",
+      "email": "compte@gmail.com",
+      "password": "Liverpool03",
+      "avatar": "https://res.cloudinary.com/dvzo0zlpg/image/upload/v1753797294/taxjttezntsai5msvi1r.png",
+      "telephone": "+221778654789",
+      "role": "client",
+      "deleted": false
     }
   ],
   "client": [
@@ -120,6 +131,11 @@
       "id": "4",
       "has_account": true,
       "id_utilisateur": "10"
+    },
+    {
+      "id": "5",
+      "has_account": true,
+      "id_utilisateur": "11"
     }
   ],
   "admin": [
@@ -173,6 +189,18 @@
       "id_boutiquier": "3",
       "article_id": "5",
       "date_creation": "2025-07-27"
+    },
+    {
+      "id": "3",
+      "nom": "produit 3",
+      "prix": 5000,
+      "quantite": 4,
+      "seuil_alerte": 5,
+      "image": "https://res.cloudinary.com/dvzo0zlpg/image/upload/v1753796995/vyboq8u8reeiit5qzcyn.png",
+      "id_boutiquier": "1",
+      "article_id": "8",
+      "date_creation": "2025-07-29",
+      "deleted": false
     }
   ],
   "articles": [
@@ -230,6 +258,14 @@
       "contenu": "Pour rafraichir a n'importe quel instant et n'importe quel moment",
       "id_boutiquier": "3",
       "date_publication": "2025-07-26",
+      "deleted": false
+    },
+    {
+      "id": "8",
+      "titre": "categorie_1",
+      "contenu": "jcdjfdhfhdjfhdjfhdfdjfhhdbdjvfbdsjvbvdjvfdhfbhbvcbncvnvbbc",
+      "id_boutiquier": "1",
+      "date_publication": "2025-07-29",
       "deleted": false
     }
   ],
@@ -345,6 +381,12 @@
       "id_boutiquier": "3",
       "id_client": "4",
       "date_association": "2025-07-27"
+    },
+    {
+      "id": "8",
+      "id_boutiquier": "1",
+      "id_client": "5",
+      "date_association": "2025-07-29"
     }
   ]
 }

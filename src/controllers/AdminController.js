@@ -73,7 +73,7 @@ export class AdminController {
     try {
       await this.service.softDeleteBoutiquier(id);
       this.clearCache();
-      this.app.eventBus.publish("boutiquiers:updated");
+      // this.app.eventBus.publish("boutiquiers:updated");
     } catch (error) {
       this.app.services.notifications.show(
         error.message || "Erreur lors de la désactivation",

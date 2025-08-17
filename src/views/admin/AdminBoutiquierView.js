@@ -228,7 +228,7 @@ export class AdminBoutiquierView extends AbstractView {
       ? this.controller.deleteBoutiquier(id)
       : this.controller.restoreBoutiquier(id));
 
-    await this.refreshView();
+    // await this.refreshView();
   }
 
   handleActionError(error) {
@@ -239,10 +239,10 @@ export class AdminBoutiquierView extends AbstractView {
     );
   }
 
-  async refreshView() {
-    this.localBoutiquiers = await this.controller.loadBoutiquiers(true);
-    this.renderContent();
-  }
+  // async refreshView() {
+  //   this.localBoutiquiers = await this.controller.loadBoutiquiers(true);
+  //   this.renderContent();
+  // }
 
   async showConfirmation(message) {
     return new Promise((resolve) => {
